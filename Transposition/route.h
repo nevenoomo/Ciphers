@@ -6,30 +6,31 @@
 using namespace std;
 
 class Cipherer{
-    int ** table;
+    char ** table;
+    int * key;
     int rows;
-    int size;
+    int capacity;
     int columns;
-    ifstream text;
+    ifstream * text;
 
-    int gettextsize(){
-        int pos = text.tellg();
-        text.seekg(0, ios_base::end);
-        int textsize = text.tellg() - pos;
-        text.seekg(pos);
+    int gettextsize() const{
+        int pos = text->tellg();
+        text->seekg(0, ios_base::end);
+        int textsize = (int)text->tellg() - pos;
+        text->seekg(pos);
 
         return textsize;
     }
 
     void fillEnc(){
-        int buf[sizeof(int)*columns];
-        while(!text.eof()){
+        char buf[sizeof(int)*columns];
+        while(!text->eof()){
             memset(buf, ' ', sizeof(buf));//TODO works??
-            text.read(buf, sizeof(buf));
-            if (rows == size){
-                table = realloc(table, size += 10);//TODO check for error
+            text->read(buf, sizeof(buf));
+            if (rows == capacity){
+                table = (char**)realloc(table, capacity += 10);//TODO check for error
             }
-            table[++rows] = malloc(sizeof(buf));
+            table[++rows] = (char*)malloc(sizeof(buf));
             memcpy(table[rows], buf, sizeof(buf));
         }
     }
@@ -37,32 +38,32 @@ class Cipherer{
     void fillDec(){
         int textsize = gettextsize();
         rows += textsize/columns;
-        if (rows > size){
-            table = realloc(table, rows);//TODO check for error
+        if (rows > capacity){
+            table = (char**)realloc(table, rows);//TODO check for error
         }
         
-        for(size_t i = 1; i < rows; i++)
+        for(int i = 1; i < rows; i++)
         {
-            table[i] = malloc(sizeof(int)*columns);
+            table[i] = (char*)malloc(sizeof(int)*columns);
         }
 
-        int buf[rows-1];
-        for(size_t i = 1; i <= columns; i++)
+        char buf[rows-1];
+        for(int i = 1; i <= columns; i++)
         {
-            if(text.bad()) ; //TODO errorhandle 
-            text.read(buf, sizeof(buf));
+            if(text->bad()) ; //TODO errorhandle 
+            text->read(buf, sizeof(buf));
             setcolumn(i, buf);
         }  
     }
 public:
-    Cipherer(int * header, const int ncol, const ifstream& input): columns(ncols), text(input), rows(1), size(10){
-        table = malloc(sizeof(int*)*10);
-        table[0] = malloc(sizeof(int)*columns);
-        memcpy(table[0], header, sizeof(int)*columns);//may just asign a ptr val, but its to dumb
+    Cipherer(int * header, const int ncols, const ifstream& input): rows(1), capacity(10), columns(ncols), text((ifstream *)&input){
+        table =(char**)malloc(sizeof(int*)*10);
+        key = (int*)malloc(sizeof(int)*columns);
+        memcpy(key, header, sizeof(int)*columns);
     }
 
     ~Cipherer(){
-        for(size_t i = 0; i < rows; i++)
+        for(int i = 0; i < rows; i++)
         {
             free(table[i]);
         }
@@ -72,7 +73,7 @@ public:
     void encrypt(){
         fillEnc();
         
-        for(size_t i = 1; i <= columns; i++)
+        for(int i = 1; i <= columns; i++)
         {
             cout<<getcolumn(i);
         }
@@ -81,9 +82,9 @@ public:
     void decrypt(){
         fillDec();
 
-        for(size_t i = 1; i < rows; i++)
+        for(int i = 1; i < rows; i++)
         {
-            for(size_t j = 0; j < columns ; i++)
+            for(int j = 0; j < columns ; i++)
             {
                 cout<<(char)table[i][j];
             }
@@ -91,4 +92,4 @@ public:
     }
 
     //TODO setcolumn getcolumn
-}
+};
