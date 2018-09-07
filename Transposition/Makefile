@@ -1,10 +1,10 @@
 CC=g++
-FLAGS=-Wall
+FLAGS=-Wall -std=c++11
 
 all: route
 
 route: route.h
-	$(CC) route.cpp -o route.exe
+	$(CC) $(FLAGS) route.cpp -o route.exe
 
 clean:
 	rm -rf *.o route.exe
