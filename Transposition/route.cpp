@@ -10,13 +10,13 @@ int main(int argc, char const *argv[])
     string mode, numbers;
     input>>mode;
     input>>numbers;
-
-    int* nums = parseNums(numbers).data();//&parseNums(numbers)[0] if earlier then c++11
-
-    if (nums == 0){
-        //TODO error!!!!
+    while(input.peek() == '\n' || input.peek() == '\r'){//skip endl
+        input.ignore();
     }
-    Cipherer c(nums, numbers.size()/2, input);
+
+    vector<int> nums = parseNums(numbers);
+
+    Cipherer c(nums.data(), nums.size(), input);//&nums[0] if earlier then c++11
     if (mode == "encrypt"){
         c.encrypt();
     }else if(mode == "decrypt"){
@@ -24,7 +24,7 @@ int main(int argc, char const *argv[])
     }else{
         //TODO error
     }
-
+    getchar();
     return 0;
 }
 
@@ -53,6 +53,7 @@ vector<int> parseNums(string numbers){
            //TODO error
        }
     }
+    v.push_back(stoi(num.str()));
     if (comma) ;//TODO nums end with comma error
     validate(v);
     return v;
@@ -62,7 +63,7 @@ void validate(vector<int> v){//TODO check if copies vector correctly
     sort(v.begin(), v.end());
     bool valid = true;
 
-    for(int i = 0; i < v.size() && valid; i++){
+    for(int i = 0; i < (int)v.size() && valid; i++){
         valid = v[i] == i + 1;
     }
 
