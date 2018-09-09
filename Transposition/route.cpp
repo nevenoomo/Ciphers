@@ -1,17 +1,28 @@
 #include "route.h"
 
 vector<int> parseNums(string numbers);
-void validate(vector<int> v);
+bool is_valid(vector<int> v);
 
 int main(int argc, char const *argv[]) {
+  if (argc != 2)
+    envokeError(string("USAGE - ") + string(argv[0]) + string(" file"),
+                COMMAND_SYNTAX_ERROR);//UGLY
+
   ifstream input(argv[1]);
-  // TODO error check
+  if (!input.is_open())
+    envokeError(string("File ") + string(argv[1]) + string(" cannot be opened"),
+                ACCESS_ERROR);
+
   string mode, numbers;
   input >> mode;
   input >> numbers;
+  if (!input.good())
+    envokeError(string("File structure is incorect"), FILE_SYNTAX_ERROR);
   while (input.peek() == '\n' || input.peek() == '\r') {  // skip endl
     input.ignore();
   }
+  if (!input.good())
+    envokeError(string("File structure is incorect"), FILE_SYNTAX_ERROR);
 
   vector<int> nums = parseNums(numbers);
 
@@ -21,22 +32,24 @@ int main(int argc, char const *argv[]) {
   } else if (mode == "decrypt") {
     c.decrypt();
   } else {
-    // TODO error
+    envokeError(string("Mode ") + mode + string(" is not recognised"),
+                FILE_SYNTAX_ERROR);
   }
   getchar();
   return 0;
+}
+
+void envokeError(const string &message, int code) {
+  cerr << "ERROR" << message << endl;
+  exit(code);
 }
 
 vector<int> parseNums(string numbers) {
   stringstream num;
   vector<int> v;
   bool comma = numbers[0] == ',';
-  if (comma) {
-    // TODO error in num order
-  }
-  if (numbers.size() == 0) {
-    // TODO empty string error
-  }
+  if (comma || numbers.size() == 0)
+    envokeError(numbers + " is not a permutation", PERMUTATION_ERROR);
 
   for (size_t i = 0; i < numbers.size(); i++) {
     if (isdigit(numbers[i])) {
@@ -44,22 +57,21 @@ vector<int> parseNums(string numbers) {
       comma = false;
     } else if (numbers[i] == ',') {
       if (comma)
-        ;  // TODO error
+        envokeError(numbers + " is not a permutation", PERMUTATION_ERROR);
       v.push_back(stoi(num.str()));
       num.str(string());  // reset stream
       comma = true;
     } else {
-      // TODO error
+      envokeError(numbers + " is not a permutation", PERMUTATION_ERROR);
     }
   }
   v.push_back(stoi(num.str()));
-  if (comma)
-    ;  // TODO nums end with comma error
-  validate(v);
+  if (comma || !is_valid(v))
+    envokeError(numbers + " is not a permutation", PERMUTATION_ERROR);
   return v;
 }
 
-void validate(vector<int> v) {  // TODO check if copies vector correctly
+bool is_valid(vector<int> v) {
   sort(v.begin(), v.end());
   bool valid = true;
 
@@ -67,7 +79,5 @@ void validate(vector<int> v) {  // TODO check if copies vector correctly
     valid = v[i] == i + 1;
   }
 
-  if (!valid) {
-    // TODO not valid num sequence
-  }
+  return valid;
 }

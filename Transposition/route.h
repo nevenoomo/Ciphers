@@ -7,7 +7,14 @@
 #include <string>
 #include <vector>
 
+#define COMMAND_SYNTAX_ERROR 1
+#define ACCESS_ERROR 2
+#define FILE_SYNTAX_ERROR 3
+#define PERMUTATION_ERROR 4
+
 using namespace std;
+
+void envokeError(const string& message, int code);
 
 class Cipherer {
   char** table;
@@ -32,11 +39,10 @@ class Cipherer {
     int times = textsize / columns;
     if (textsize % columns != 0) times += 1;
     for (int i = 0; i < times; i++) {
-      memset(buf, ' ', columns * sizeof(char));  // TODO works??
+      memset(buf, ' ', columns * sizeof(char));
       text->read(buf, columns);
       if (rows == capacity) {
-        table = (char**)realloc(
-            table, (capacity += 10) * sizeof(char*));  // TODO check for error
+        table = (char**)realloc(table, (capacity += 10) * sizeof(char*));
       }
       table[rows] = (char*)malloc(columns * sizeof(char));
       memcpy(table[rows], buf, columns * sizeof(char));
@@ -46,11 +52,13 @@ class Cipherer {
 
   void fillDec() {
     int textsize = gettextsize();
-    rows = textsize / columns;  // TODO if (textsize%columns!=0) then text has
-                                // not been ecrypted correctly
+    rows = textsize / columns;
+    if (textsize % columns != 0)
+      envokeError(string("Text has not been encrypted correctly"),
+                  FILE_SYNTAX_ERROR);
+
     if (rows > capacity) {
-      table =
-          (char**)realloc(table, rows * sizeof(char*));  // TODO check for error
+      table = (char**)realloc(table, rows * sizeof(char*));
     }
 
     for (int i = 0; i < rows; i++) {
@@ -59,8 +67,6 @@ class Cipherer {
 
     char buf[rows];
     for (int i = 0; i < columns; i++) {
-      if (text->bad())
-        ;  // TODO errorhandle
       text->read(buf, rows);
       setcolumn(key[i], buf);
     }
@@ -112,7 +118,7 @@ class Cipherer {
     return s.str();
   }
 
-  void setcolumn(int j, char buf[]) {  // TODO buf[rows] ok?
+  void setcolumn(int j, char buf[]) {
     for (int i = 0; i < rows; i++) {
       table[i][j] = buf[i];
     }
