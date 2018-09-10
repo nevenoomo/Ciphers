@@ -19,15 +19,15 @@ void envokeError(const string& message, int code);
 class Cipherer {
   char** table;
   int* key;
-  int rows;
-  int capacity;
-  int columns;
+  size_t columns;
+  size_t rows;
   ifstream* text;
+  bool size_rounded;
 
-  int gettextsize() const {
-    int pos = text->tellg();
+  size_t gettextsize() const {
+    size_t pos = text->tellg();
     text->seekg(0, ios_base::end);
-    int textsize = (int)text->tellg() - pos;
+    size_t textsize = (size_t)text->tellg() - pos;
     text->seekg(pos);
 
     return textsize;
@@ -35,55 +35,45 @@ class Cipherer {
 
   void fillEnc() {
     char buf[columns];
-    int textsize = gettextsize();
-    int times = textsize / columns;
-    if (textsize % columns != 0) times += 1;
-    for (int i = 0; i < times; i++) {
+    for (size_t i = 0; i < rows; i++) {
       memset(buf, ' ', columns * sizeof(char));
       text->read(buf, columns);
-      if (rows == capacity) {
-        table = (char**)realloc(table, (capacity += 10) * sizeof(char*));
-      }
-      table[rows] = (char*)malloc(columns * sizeof(char));
-      memcpy(table[rows], buf, columns * sizeof(char));
-      rows++;
+      memcpy(table[i], buf, columns * sizeof(char));
     }
   }
 
   void fillDec() {
-    int textsize = gettextsize();
-    rows = textsize / columns;
-    if (textsize % columns != 0)
+    if (size_rounded)
       envokeError(string("Text has not been encrypted correctly"),
                   FILE_SYNTAX_ERROR);
 
-    if (rows > capacity) {
-      table = (char**)realloc(table, rows * sizeof(char*));
-    }
-
-    for (int i = 0; i < rows; i++) {
-      table[i] = (char*)malloc(sizeof(char) * columns);
-    }
-
-    char buf[rows];
-    for (int i = 0; i < columns; i++) {
+    char* buf = (char*)malloc(rows * sizeof(char));
+    for (size_t i = 0; i < columns; i++) {
       text->read(buf, rows);
       setcolumn(key[i], buf);
     }
+    free(buf);
   }
 
  public:
   Cipherer(int* header, const int ncols, const ifstream& input)
-      : rows(0), capacity(10), columns(ncols), text((ifstream*)&input) {
-    table = (char**)malloc(sizeof(char*) * 10);
+      : columns(ncols), text((ifstream*)&input) {
+    size_t textsize = gettextsize();
+    rows = textsize / columns;
+    size_rounded = textsize % columns != 0;
+    if (size_rounded) rows += 1;
+    table = (char**)malloc(sizeof(char*) * rows);
+    for (size_t i = 0; i < rows; ++i) {
+      table[i] = (char*)malloc(sizeof(char) * columns);
+    }
     key = (int*)malloc(sizeof(int) * columns);
-    for (int i = 0; i < columns; i++) {
+    for (size_t i = 0; i < columns; i++) {
       key[header[i] - 1] = i;
     }
   }
 
   ~Cipherer() {
-    for (int i = 0; i < rows; i++) {
+    for (size_t i = 0; i < rows; i++) {
       free(table[i]);
     }
     free(table);
@@ -93,16 +83,15 @@ class Cipherer {
   void encrypt() {
     fillEnc();
 
-    for (int i = 0; i < columns; i++) {
+    for (size_t i = 0; i < columns; i++) {
       cout << getcolumn(key[i]);
     }
   }
 
   void decrypt() {
     fillDec();
-
-    for (int i = 0; i < rows; i++) {
-      for (int j = 0; j < columns; j++) {
+    for (size_t i = 0; i < rows; i++) {
+      for (size_t j = 0; j < columns; j++) {
         cout << table[i][j];
       }
     }
@@ -111,7 +100,7 @@ class Cipherer {
   string getcolumn(int j) {
     stringstream s;
 
-    for (int i = 0; i < rows; i++) {
+    for (size_t i = 0; i < rows; i++) {
       s << table[i][j];
     }
 
@@ -119,7 +108,7 @@ class Cipherer {
   }
 
   void setcolumn(int j, char buf[]) {
-    for (int i = 0; i < rows; i++) {
+    for (size_t i = 0; i < rows; i++) {
       table[i][j] = buf[i];
     }
   }

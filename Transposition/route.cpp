@@ -6,7 +6,7 @@ bool is_valid(vector<int> v);
 int main(int argc, char const *argv[]) {
   if (argc != 2)
     envokeError(string("USAGE - ") + string(argv[0]) + string(" file"),
-                COMMAND_SYNTAX_ERROR);//UGLY
+                COMMAND_SYNTAX_ERROR);  // UGLY
 
   ifstream input(argv[1]);
   if (!input.is_open())
@@ -40,7 +40,8 @@ int main(int argc, char const *argv[]) {
 }
 
 void envokeError(const string &message, int code) {
-  cerr << "ERROR" << message << endl;
+  cerr << "ERROR: " << message << endl;
+  getchar();
   exit(code);
 }
 
