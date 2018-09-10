@@ -33,7 +33,7 @@ class Cipherer {
     return textsize;
   }
 
-  void fillEnc() {
+  void fillEnc() const {
     char buf[columns];
     for (size_t i = 0; i < rows; i++) {
       memset(buf, ' ', columns * sizeof(char));
@@ -42,7 +42,7 @@ class Cipherer {
     }
   }
 
-  void fillDec() {
+  void fillDec() const {
     if (size_rounded)
       envokeError(string("Text has not been encrypted correctly"),
                   FILE_SYNTAX_ERROR);
@@ -80,15 +80,14 @@ class Cipherer {
     free(key);
   }
 
-  void encrypt() {
+  void encrypt() const {
     fillEnc();
-
     for (size_t i = 0; i < columns; i++) {
       cout << getcolumn(key[i]);
     }
   }
 
-  void decrypt() {
+  void decrypt() const {
     fillDec();
     for (size_t i = 0; i < rows; i++) {
       for (size_t j = 0; j < columns; j++) {
@@ -97,7 +96,7 @@ class Cipherer {
     }
   }
 
-  string getcolumn(int j) {
+  string getcolumn(int j) const {
     stringstream s;
 
     for (size_t i = 0; i < rows; i++) {
@@ -107,7 +106,7 @@ class Cipherer {
     return s.str();
   }
 
-  void setcolumn(int j, char buf[]) {
+  void setcolumn(int j, char buf[]) const {
     for (size_t i = 0; i < rows; i++) {
       table[i][j] = buf[i];
     }

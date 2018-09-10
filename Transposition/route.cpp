@@ -2,8 +2,9 @@
 
 vector<int> parseNums(string numbers);
 bool is_valid(vector<int> v);
+void process(const string& mode, const Cipherer& c);
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char const* argv[]) {
   if (argc != 2)
     envokeError(string("USAGE - ") + string(argv[0]) + string(" file"),
                 COMMAND_SYNTAX_ERROR);  // UGLY
@@ -14,19 +15,19 @@ int main(int argc, char const *argv[]) {
                 ACCESS_ERROR);
 
   string mode, numbers;
-  input >> mode;
-  input >> numbers;
-  if (!input.good())
-    envokeError(string("File structure is incorect"), FILE_SYNTAX_ERROR);
-  while (input.peek() == '\n' || input.peek() == '\r') {  // skip endl
-    input.ignore();
-  }
+  input >> mode >> numbers;
+  input.ignore();  // skip endl
   if (!input.good())
     envokeError(string("File structure is incorect"), FILE_SYNTAX_ERROR);
 
   vector<int> nums = parseNums(numbers);
-
   Cipherer c(nums.data(), nums.size(), input);  //&nums[0] if earlier then c++11
+  process(mode, c);
+  getchar();
+  return 0;
+}
+
+void process(const string& mode, const Cipherer& c) {
   if (mode == "encrypt") {
     c.encrypt();
   } else if (mode == "decrypt") {
@@ -35,11 +36,9 @@ int main(int argc, char const *argv[]) {
     envokeError(string("Mode ") + mode + string(" is not recognised"),
                 FILE_SYNTAX_ERROR);
   }
-  getchar();
-  return 0;
 }
 
-void envokeError(const string &message, int code) {
+void envokeError(const string& message, int code) {
   cerr << "ERROR: " << message << endl;
   getchar();
   exit(code);
