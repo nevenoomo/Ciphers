@@ -15,8 +15,8 @@ int main(int argc, char const* argv[]) {
                 ACCESS_ERROR);
 
   string mode, numbers;
-  input >> mode >> numbers;
-  input.ignore();  // skip endl
+  getline(input, mode);
+  getline(input, numbers);
   if (!input.good())
     envokeError(string("File structure is incorect"), FILE_SYNTAX_ERROR);
 

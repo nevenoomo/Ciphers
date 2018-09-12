@@ -21,14 +21,14 @@ class Cipherer {
   int* key;
   size_t columns;
   size_t rows;
-  ifstream* text;
+  ifstream& text;
   bool size_rounded;
 
   size_t gettextsize() const {
-    size_t pos = text->tellg();
-    text->seekg(0, ios_base::end);
-    size_t textsize = (size_t)text->tellg() - pos;
-    text->seekg(pos);
+    size_t pos = text.tellg();
+    text.seekg(0, ios::end);
+    size_t textsize = (size_t)text.tellg() - pos;
+    text.seekg(pos);
 
     return textsize;
   }
@@ -37,7 +37,7 @@ class Cipherer {
     char buf[columns];
     for (size_t i = 0; i < rows; i++) {
       memset(buf, ' ', columns * sizeof(char));
-      text->read(buf, columns);
+      text.read(buf, columns);
       memcpy(table[i], buf, columns * sizeof(char));
     }
   }
@@ -49,15 +49,15 @@ class Cipherer {
 
     char* buf = (char*)malloc(rows * sizeof(char));
     for (size_t i = 0; i < columns; i++) {
-      text->read(buf, rows);
+      text.read(buf, rows);
       setcolumn(key[i], buf);
     }
     free(buf);
   }
 
  public:
-  Cipherer(int* header, const int ncols, const ifstream& input)
-      : columns(ncols), text((ifstream*)&input) {
+  Cipherer(int* header, const int ncols, ifstream& input)
+      : columns(ncols), text(input) {
     size_t textsize = gettextsize();
     rows = textsize / columns;
     size_rounded = textsize % columns != 0;
