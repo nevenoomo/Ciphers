@@ -1,6 +1,6 @@
 CC=g++
-FLAGS=-std=c++11 
-DEBUGFLAGS=-g -Wall
+FLAGS=-std=c++11 -Wall
+DEBUGFLAGS=-g
 
 all: route
 
