@@ -7,7 +7,7 @@ void process(const string& mode, const Cipherer& c);
 int main(int argc, char const* argv[]) {
   if (argc != 2)
     envokeError(string("USAGE - ") + string(argv[0]) + string(" file"),
-                COMMAND_SYNTAX_ERROR);  // UGLY
+                COMMAND_SYNTAX_ERROR);
 
   ifstream input(argv[1]);
   if (!input.is_open())
