@@ -26,6 +26,7 @@ class Polybius {
   void fill() {
     int c = ' ', coordinate = 0, offset = 0;
     while ((c = text.get()) != EOF) {
+      if (iscntrl(c)) continue;
       if (!isalpha(c)) envoke_error("Text is not valid", UNVALID_TEXT);
       c = toupper(c);
       if (c == 'J') c = 'I';
