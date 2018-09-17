@@ -26,19 +26,39 @@ class Cipherer {
   bool size_rounded;
 
   size_t gettextsize() const {
-    size_t pos = text.tellg();
-    text.seekg(0, ios::end);
-    size_t textsize = (size_t)text.tellg() - pos;
-    text.seekg(pos);
+    size_t pos = text.tellg(), cntrl = 0, textsize = 0;
+    int c = ' ';
 
+    while ((c = text.get()) != EOF) {
+      if (iscntrl(c)) {
+        cntrl++;
+        continue;
+      }
+      textsize++;
+    }
+
+    text.clear();             // unset eof flag
+    text.seekg(pos - cntrl);  // it's a hack, just seekg(pos) doesn't work
     return textsize;
+  }
+
+  void read_to_buf(char* buf, size_t size) const {
+    int c = ' ';
+    size_t i = 0;
+    while (i < size) {
+      if ((c = text.get()) == EOF) return;
+      if (iscntrl(c)) continue;
+      buf[i] = (char)c;
+      i++;
+    }
+    return;  // DEBUG
   }
 
   void fillEnc() const {
     char buf[columns];
     for (size_t i = 0; i < rows; i++) {
       memset(buf, ' ', columns * sizeof(char));
-      text.read(buf, columns);
+      read_to_buf(buf, columns);
       memcpy(table[i], buf, columns * sizeof(char));
     }
   }
@@ -50,7 +70,7 @@ class Cipherer {
 
     char* buf = (char*)malloc(rows * sizeof(char));
     for (size_t i = 0; i < columns; i++) {
-      text.read(buf, rows);
+      read_to_buf(buf, rows);
       setcolumn(key[i], buf);
     }
     free(buf);
