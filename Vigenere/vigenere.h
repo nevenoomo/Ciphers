@@ -23,6 +23,7 @@ class Vigenere {
   Vigenere(const string& key, int key_s, istream& input, int text_size)
       : key(key), key_s(key_s), text(input), text_size(text_size) {
     int c = ' ';
+    text.ignore();
     while (isspace(c = text.get())) {
       cout << (char)c;
     }
