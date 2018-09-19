@@ -9,19 +9,19 @@ using namespace std;
 #define ACCESS_ERROR 2
 #define SYNTAX_ERROR 3
 #define UNVALID_TEXT 4
-#define ALPHA_LEN 26
+#define ALPHA_L 26
 
 void envoke_error(const string& message, int code);
 
 class Vigenere {
   const string& key;
-  int key_size;
+  int key_s;
   istream& text;
   int text_size;
 
  public:
-  Vigenere(const string& key, int key_size, istream& input, int text_size)
-      : key(key), key_size(key_size), text(input), text_size(text_size) {
+  Vigenere(const string& key, int key_s, istream& input, int text_size)
+      : key(key), key_s(key_s), text(input), text_size(text_size) {
     int c = ' ';
     while (isspace(c = text.get())) {
       cout << (char)c;
@@ -42,8 +42,7 @@ class Vigenere {
       if (!isalpha(c)) envoke_error("Bad text", UNVALID_TEXT);
       was_lower = islower(c);
       c = toupper(c);
-      ciphered = ((c - 'A') + (toupper(key[j % key_size]) - 'A')) % ALPHA_LEN;
-      ciphered += 'A';
+      ciphered = ((c - 'A') + (toupper(key[j % key_s]) - 'A')) % ALPHA_L + 'A';
       if (was_lower) ciphered = tolower(ciphered);
       cout << ciphered;
       i++;
@@ -55,7 +54,7 @@ class Vigenere {
   void decrypt() {
     int c = ' ', i = 0, j = 0;
     bool was_lower = false;
-    char deciphered = ' ';
+    char d = ' ';
     while (i < text_size && (c = text.get()) != EOF) {
       if (isspace(c) || isdigit(c) || ispunct(c)) {
         cout << (char)c;
@@ -65,11 +64,9 @@ class Vigenere {
       if (!isalpha(c)) envoke_error("Bad text", UNVALID_TEXT);
       was_lower = islower(c);
       c = toupper(c);
-      deciphered =
-          ((c - 'A') - (toupper(key[j % key_size]) - 'A') + 26) % ALPHA_LEN;
-      deciphered += 'A';
-      if (was_lower) deciphered = tolower(deciphered);
-      cout << deciphered;
+      d = ((c - 'A') - (toupper(key[j % key_s]) - 'A') + ALPHA_L) % ALPHA_L + 'A';
+      if (was_lower) d = tolower(d);
+      cout << d;
       i++;
       j++;
     }
