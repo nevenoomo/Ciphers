@@ -2,6 +2,7 @@
 
 void envoke_error(const string &message, int code);
 bool validate_params(string &mode, string &lang, int num);
+void delete_cntrl(string& m, string& n);
 
 int main(int argc, char const *argv[]) {
   if (argc != 2) envoke_error("Filename expected", COMMAND_SYNTAX_ERROR);
@@ -10,6 +11,7 @@ int main(int argc, char const *argv[]) {
   string mode, lang_and_number;
   getline(input, mode);
   getline(input, lang_and_number);
+  delete_cntrl(mode, lang_and_number);
   if (!input.good()) envoke_error("File structure is incorect", SYNTAX_ERROR);
   string lang;
   int num = 0;
@@ -21,6 +23,14 @@ int main(int argc, char const *argv[]) {
   Polybius(mode, lang, num, input).process();
   getchar();
   return 0;
+}
+
+void delete_cntrl(string& m, string& n) {
+  bool first, second;
+  while ((first = iscntrl(m.back())) || (second = iscntrl(n.back()))) {
+    if (first) m = m.erase(m.size() - 1);
+    if (second) n = n.erase(n.size() - 1);
+  }
 }
 
 void envoke_error(const string &message, int code) {
