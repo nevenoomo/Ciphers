@@ -3,6 +3,7 @@
 vector<int> parseNums(string numbers);
 bool is_valid(vector<int> v);
 void process(const string& mode, const Cipherer& c);
+void delete_cntrl(string& m, string& n);
 
 int main(int argc, char const* argv[]) {
   if (argc != 2)
@@ -17,6 +18,7 @@ int main(int argc, char const* argv[]) {
   string mode, numbers;
   getline(input, mode);
   getline(input, numbers);
+  delete_cntrl(mode, numbers);
   if (!input.good())
     envokeError(string("File structure is incorect"), FILE_SYNTAX_ERROR);
 
@@ -25,6 +27,14 @@ int main(int argc, char const* argv[]) {
   process(mode, c);
   getchar();
   return 0;
+}
+
+void delete_cntrl(string& m, string& n) {
+  bool first, second;
+  while ((first = iscntrl(m.back())) || (second = iscntrl(n.back()))) {
+    if (first) m = m.erase(m.size() - 1);
+    if (second) n = n.erase(n.size() - 1);
+  }
 }
 
 void process(const string& mode, const Cipherer& c) {
