@@ -21,6 +21,7 @@ class Polybius {
   enum lang { ENGLISH } lang;
   ifstream &text;
   int rotation;
+  vector<bool> was_lower;
   vector<int> cipher;
 
   void fill() {
@@ -28,6 +29,7 @@ class Polybius {
     while ((c = text.get()) != EOF) {
       if (iscntrl(c)) continue;
       if (!isalpha(c)) envoke_error("Text is not valid", UNVALID_TEXT);
+      was_lower.push_back(islower(c));
       c = toupper(c);
       if (c == 'J') c = 'I';
       offset = c - 'A' + ((c > 'I') ? (-1) : 0);
@@ -78,6 +80,7 @@ class Polybius {
       offset = (cipher[i] / 10 - 1) * ENG_DIM + (cipher[i] % 10 - 1);
       c = 'A' + offset;
       if (c > 'I') c++;
+      if (was_lower[i]) c = tolower(c);
       cout << c;
     }
   }
