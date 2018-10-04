@@ -47,8 +47,9 @@ bool validate_params(string &mode, string &lang, int num) {
     envoke_error("Language is not supported", SYNTAX_ERROR);
   } else if (num % 2 == 0) {
     envoke_error("Odd number expected", SYNTAX_ERROR);
-  } else if (num < 0) {
-    envoke_error("Positive number expected", SYNTAX_ERROR);
   }
+  // } else if (num < 0) {
+  //   envoke_error("Positive number expected", SYNTAX_ERROR);
+  // }
   return true;
 }

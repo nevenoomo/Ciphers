@@ -92,6 +92,10 @@ class Polybius {
       lang = ENGLISH;
     }
     enc = mode == "encrypt";
+    if (num < 0){
+      this->enc = !enc;
+      this->rotation = -num;
+    }
   }
 
   void process() {
