@@ -35,7 +35,7 @@ class Vigenere {
     bool was_lower = false;
     char ciphered = ' ';
     while (i < text_size && (c = text.get()) != EOF) {
-      if (isspace(c) || isdigit(c) || ispunct(c)) {
+      if (isspace(c) || ispunct(c)) {
         cout << (char)c;
         if (c != '\n') i++;
         continue;
@@ -57,7 +57,7 @@ class Vigenere {
     bool was_lower = false;
     char d = ' ';
     while (i < text_size && (c = text.get()) != EOF) {
-      if (isspace(c) || isdigit(c) || ispunct(c)) {
+      if (isspace(c) || ispunct(c)) {
         cout << (char)c;
         if (c != '\n') i++;
         continue;
