@@ -12,10 +12,10 @@ int main(int argc, char const *argv[]) {
   int key_len = -1, text_len = -1;
   getline(input, mode);
   input >> key_len >> key >> text_len;
-  if (!input.good()) envoke_error("File structure is incorect", SYNTAX_ERROR);
+  if (!input.good() && text_len != 0) envoke_error("File structure is incorect", SYNTAX_ERROR);
   delete_cntrl(mode);
   delete_cntrl(key);
-  if (key_len <= 0 || text_len <= 0)
+  if (key_len <= 0 || text_len < 0)
     envoke_error("Wrong size given", SYNTAX_ERROR);
   if (key_len > (int)key.size())
     envoke_error("Wrong key size given", SYNTAX_ERROR);
