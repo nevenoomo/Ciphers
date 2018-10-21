@@ -10,4 +10,5 @@ class ECB {
    public:
     ECB(uint32_t K[8], istream& i, ostream& o) : b(K), input(i), output(o) {}
     void encrypt();
+    void decrypt();
 };

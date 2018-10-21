@@ -2,9 +2,6 @@
 
 int main(int argc, char const *argv[])
 {
-    // ofstream i("input.txt", ios::binary);
-    // uint64_t p = 0x92def06b3c130a59;
-    // i.write((char*)Utils::convert_to_arr(p), sizeof(p));
     uint32_t K[8] = {
         0xffeeddcc,
         0xbbaa9988,
