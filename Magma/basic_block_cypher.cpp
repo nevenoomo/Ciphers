@@ -51,14 +51,14 @@ void BasicBlockCypher::key_schedule(uint32_t K[8]) {
 
 uint64_t BasicBlockCypher::e(uint64_t P) {
     uint32_t a0 = P & 0xffffffff, a1 = P >> 32;
-    pair<uint32_t, uint32_t> a(P >> 32, P & 0xffffffff);
+    pair<uint32_t, uint32_t> a(a1, a0);
     for (int i = 0; i < 31; i++) a = G(K[i], a.first, a.second);
     return G1(K[31], a.first, a.second);
 }
 
 uint64_t BasicBlockCypher::d(uint64_t P){
     uint32_t a0 = P & 0xffffffff, a1 = P >> 32;
-    pair<uint32_t, uint32_t> a(P >> 32, P & 0xffffffff);
+    pair<uint32_t, uint32_t> a(a1, a0);
     for (int i = 31; i > 0; i--) a = G(K[i], a.first, a.second);
     return G1(K[0], a.first, a.second);
 }
