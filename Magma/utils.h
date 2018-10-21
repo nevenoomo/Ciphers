@@ -3,6 +3,7 @@
 
 class Utils {
    public:
+    static uint64_t T(size_t s, uint64_t P);//s in bytes
     static uint64_t filesize(istream & s);
     static uint8_t* convert_to_arr(uint64_t P);
     static uint64_t convert_to_num(uint8_t* P);

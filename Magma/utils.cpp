@@ -1,5 +1,11 @@
 #include "utils.h"
 
+uint64_t Utils::T(size_t s, uint64_t P){
+    uint64_t mask = 0;
+    for (size_t i = 0; i < s; i++) mask |= 0xff00000000000000>>(i*8);
+    return (P&mask)>>((8-s)*8);
+}
+
 uint64_t Utils::filesize(istream & s){
     s.seekg(0, ios_base::end);
     uint64_t size = s.tellg();
