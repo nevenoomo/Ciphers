@@ -6,13 +6,6 @@ uint64_t Utils::T(size_t s, uint64_t P){
     return (P&mask)>>((8-s)*8);
 }
 
-uint64_t Utils::filesize(istream & s){
-    s.seekg(0, ios_base::end);
-    uint64_t size = s.tellg();
-    s.seekg(0, ios_base::beg);
-    return size;
-}
-
 uint8_t* Utils::convert_to_arr(uint64_t P) {
     uint8_t* P1 = new uint8_t[8];
     uint64_t mask = 0xff00000000000000;
