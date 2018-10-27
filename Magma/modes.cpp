@@ -1,27 +1,46 @@
 #include "modes.h"
 
-void ECB::encrypt() {
+void ECB::encrypt() {  // TODO test
     size_t bytes_read = 0;
+    bool padded = false;
     uint8_t P[8] = {0};
     uint8_t *C = 0;
     while (!feof(input)) {
         bytes_read = fread(P, sizeof(uint8_t), BLOCK_SIZE, input);
         if (bytes_read == 0) break;
-        if (bytes_read < 8) Utils::padd_proc2(P, bytes_read, 8);
+        if (bytes_read < 8) padded = (bool)Utils::padd_proc2(P, bytes_read, 8);
         C = Utils::convert_to_arr(b.e(Utils::convert_to_num(P)));
+        fwrite(C, sizeof(uint8_t), BLOCK_SIZE, output);
+        delete[] C;
+    }
+    if (!padded) {
+        uint8_t P1[8] = {0};
+        Utils::padd_proc2(P1, 0, 8);
+        C = Utils::convert_to_arr(b.e(Utils::convert_to_num(P1)));
         fwrite(C, sizeof(uint8_t), BLOCK_SIZE, output);
         delete[] C;
     }
 }
 
-void ECB::decrypt() {
+void ECB::decrypt() {  // TODO test, check len
     size_t bytes_read = 0;
+    int c = 0;
     uint8_t C[8] = {0};
     uint8_t *P = 0;
     while (!feof(input)) {
         bytes_read = fread(C, sizeof(uint8_t), BLOCK_SIZE, input);
-        if (bytes_read == 0) break;
-        if (bytes_read < 8) Utils::padd_proc2(C, bytes_read, 8);
+        if ((c = fgetc(input)) == EOF) {
+            P = Utils::convert_to_arr(b.d(Utils::convert_to_num(C)));
+            for (c = BLOCK_SIZE; c >= 0 && C[c] == 0x0; c--);
+            if (c == -1 || C[c] != 0xf0)
+                fwrite(P, sizeof(uint8_t), BLOCK_SIZE, output);
+            else if (C[c] == 0xf0)
+                fwrite(P, sizeof(uint8_t), c, output);
+            delete[] P;
+            break;
+        } else {
+            ungetc(c, input);
+        }
         P = Utils::convert_to_arr(b.d(Utils::convert_to_num(C)));
         fwrite(P, sizeof(uint8_t), BLOCK_SIZE, output);
         delete[] P;
