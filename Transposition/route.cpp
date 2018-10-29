@@ -25,7 +25,7 @@ int main(int argc, char const* argv[]) {
   vector<int> nums = parseNums(numbers);
   Cipherer c(nums.data(), nums.size(), input);  //&nums[0] if earlier then c++11
   process(mode, c);
-  getchar();
+
   return 0;
 }
 
@@ -50,7 +50,7 @@ void process(const string& mode, const Cipherer& c) {
 
 void envokeError(const string& message, int code) {
   cerr << "ERROR: " << message << endl;
-  getchar();
+
   exit(code);
 }
 
