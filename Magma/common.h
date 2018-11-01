@@ -5,6 +5,7 @@
 #include <vector>
 #include <utility>
 #include <cstdio>
+#include <algorithm>
 
 #define BLOCK_SIZE 8
 
