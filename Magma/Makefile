@@ -6,12 +6,12 @@ SOURCES=main.cpp modes.cpp utils.cpp basic_block_cypher.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=magma.exe 
 
-all: $(HEADERS) $(SOURCES) $(EXECUTABLE)
+all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS) 
 	$(CC) $(DEBUGFLAGS) $(OBJECTS) -o $@
 
-.cpp.o: $(@:.o=.h)
+.cpp.o:
 	$(CC) $(CFLAGS) $(DEBUGFLAGS) $< -o $@
 
 clean:

@@ -1,6 +1,6 @@
 #include "utils.h"
 
-uint64_t Utils::T(size_t s, uint64_t P){
+uint64_t Utils::T(size_t s, uint64_t P){ // s in bytes
     uint64_t mask = 0;
     for (size_t i = 0; i < s; i++) mask |= 0xff00000000000000>>(i*8);
     return (P&mask)>>((8-s)*8);
@@ -38,7 +38,7 @@ uint64_t Utils::padd_proc2(uint64_t P, size_t r, size_t l) {
 }
 
 uint64_t Utils::padd_proc3(uint8_t* P, size_t r, size_t l){
-    if (r == 8)
+    if (r == l)
         return convert_to_num(P);
     else
         return padd_proc2(P, r, l);
@@ -46,7 +46,7 @@ uint64_t Utils::padd_proc3(uint8_t* P, size_t r, size_t l){
 
 
 uint64_t Utils::padd_proc3(uint64_t P, size_t r, size_t l) {
-    if (r == 8)
+    if (r == l)
         return P;
     else
         return padd_proc2(P, r, l);
