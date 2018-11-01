@@ -99,7 +99,7 @@ class MAC {
     uint64_t K2;
 
    public:
-    MAC(uint32_t K[8], FILE *i, FILE *o);;
+    MAC(uint32_t K[8], FILE *i, FILE *o);
 
     void generate();
 };
