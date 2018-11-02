@@ -115,6 +115,7 @@ class CFB : public Mode {
         : b(K), R(IV), input(i), output(o) {}
     void encrypt();
     void decrypt();
+    
     void run(bool enc) override {
         if (enc)
             encrypt();

@@ -15,8 +15,7 @@ bool get_O(const string &s);
 void validate_params(bool p[14]);
 Modes::Mode *get_cipher(MODE m);
 
-FILE *i = freopen(NULL, "rb", stdin);
-FILE *o = freopen(NULL, "wb", stdout);  // TODO check ret val
+FILE *i = stdin, *o = stdout;
 vector<uint64_t> IV(1, 0);
 uint32_t IV32 = 0;
 string IV_filename("");
@@ -24,6 +23,8 @@ vector<uint32_t> Key(8, 0);
 bool enc = true;
 
 int main(int argc, char const *argv[]) {
+    freopen(NULL, "rb", stdin);
+    freopen(NULL, "wb", stdout);
     try {
         if (argc < 2) throw logic_error("Few arguments given");
         vector<string> args(argv, argv + argc);
@@ -33,7 +34,7 @@ int main(int argc, char const *argv[]) {
         Modes::Mode *cipher = get_cipher(m);
         cipher->run(enc);
         delete cipher;
-    } catch (exception e) {
+    } catch (logic_error e) {
         cerr << e.what() << endl;
         print_help(cerr);
         fclose(i);
@@ -48,7 +49,8 @@ int main(int argc, char const *argv[]) {
 MODE fill_context(vector<string> &args) {
     MODE m = ECB;
     bool params[14] = {false};
-    for (size_t i = 1; i < args.size(); i++) check(args, params, i);
+    for (size_t i = 1; i < args.size(); i++) 
+        check(args, params, i);
     if (params[CTR])
         m = CTR;
     else if (params[OFB])
@@ -237,8 +239,15 @@ Modes::Mode *get_cipher(MODE m) {
         case MAC:
             cipher = new Modes::MAC(Key.data(), i, o);
             break;
-        case D: case E: case O: case V: case I: case K:
-        case HELP: case H: break;
+        case D:
+        case E:
+        case O:
+        case V:
+        case I:
+        case K:
+        case HELP:
+        case H:
+            break;
     }
     return cipher;
 }

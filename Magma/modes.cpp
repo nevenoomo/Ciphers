@@ -22,7 +22,7 @@ void ECB::decrypt() {
     while (!feof(input)) {
         bytes_read = fread(C, sizeof(uint8_t), BLOCK_SIZE, input);
         if (bytes_read < 8)
-            ;  // TODO error
+            throw logic_error("Ciphertext was not padded properly");
         P = Utils::convert_to_arr(b.d(Utils::convert_to_num(C)));
         if ((c = fgetc(input)) == EOF) {
             for (c = BLOCK_SIZE - 1; c >= 0 && P[c] == 0x0; c--)
@@ -141,14 +141,14 @@ void CBC::decrypt() {
     while (!feof(input)) {
         bytes_read = fread(C1, sizeof(uint8_t), BLOCK_SIZE, input);
         if (bytes_read < 8)
-            ;  // TODO error
+            throw logic_error("Ciphertext was not padded properly");
         C = Utils::convert_to_num(C1);
         P1 = Utils::convert_to_arr(b.d(C) ^ R[0]);
         if ((c = fgetc(input)) == EOF) {
             for (c = BLOCK_SIZE - 1; c >= 0 && P1[c] == 0x0; c--) {
             }
             if (c == -1 || P1[c] != 0x80)
-                ;  // TODO error
+                throw logic_error("Ciphertext was not padded properly");
             else if (P1[c] == 0x80)
                 fwrite(P1, sizeof(uint8_t), c, output);
             delete[] P1;
@@ -189,7 +189,7 @@ void CFB::decrypt() {
     while (!feof(input)) {
         bytes_read = fread(C1, sizeof(uint8_t), BLOCK_SIZE, input);
         if (bytes_read < 8)
-            ;  // TODO error
+            throw logic_error("Ciphertext was not padded properly");
         C = Utils::convert_to_num(C1);
         P = C ^ b.e(R[0]);
         P1 = Utils::convert_to_arr(P);
@@ -198,7 +198,7 @@ void CFB::decrypt() {
             for (c = BLOCK_SIZE - 1; c >= 0 && P1[c] == 0x0; c--) {
             }
             if (c == -1 || P1[c] != 0x80)
-                ;  // TODO error
+                throw logic_error("Ciphertext was not padded properly");
             else if (P1[c] == 0x80)
                 fwrite(P1, sizeof(uint8_t), c, output);
             delete[] P1;
