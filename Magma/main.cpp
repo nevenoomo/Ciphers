@@ -187,7 +187,7 @@ bool get_IV64(FILE *f) {
     IV.clear();
     uint8_t buf[8] = {0};
     size_t len = Utils::file_size(f), max_iter = len / 8;
-    if (len % 8 != 0) throw logic_error("Wrong IV size");
+    if (len % 8 != 0 || len == 0) throw logic_error("Wrong IV size");
     for (size_t i = 0; i < max_iter; i++) {
         if (fread(buf, sizeof(uint8_t), 8, f) != 8)
             throw logic_error("Cannot read IV file");
