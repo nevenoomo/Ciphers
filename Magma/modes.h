@@ -2,8 +2,13 @@
 #include <algorithm>
 #include "basic_block_cypher.h"
 #include "utils.h"
+namespace Modes {
+struct Mode {
+    virtual void run(bool enc) {}
+    virtual ~Mode() {}
+};
 
-class ECB {
+class ECB : public Mode {
     BasicBlockCypher b;
     FILE* input;
     FILE* output;
@@ -12,9 +17,15 @@ class ECB {
     ECB(uint32_t K[8], FILE* i, FILE* o) : b(K), input(i), output(o) {}
     void encrypt();
     void decrypt();
+    void run(bool enc) override {
+        if (enc)
+            encrypt();
+        else
+            decrypt();
+    }
 };
 
-class CTR {
+class CTR : public Mode {
     BasicBlockCypher b;
     FILE* input;
     FILE* output;
@@ -27,9 +38,15 @@ class CTR {
         : b(K), input(i), output(o), c((uint64_t)IV << 32) {}
     void encrypt();
     void decrypt();
+    void run(bool enc) override {
+        if (enc)
+            encrypt();
+        else
+            decrypt();
+    }
 };
 
-class OFB {
+class OFB : public Mode {
     BasicBlockCypher b;
     vector<uint64_t> R;
     FILE* input;
@@ -46,9 +63,15 @@ class OFB {
         : b(K), R(IV), input(i), output(o) {}
     void encrypt();
     void decrypt();
+    void run(bool enc) override {
+        if (enc)
+            encrypt();
+        else
+            decrypt();
+    }
 };
 
-class CBC {
+class CBC : public Mode {
     // m = z*n
     BasicBlockCypher b;
     vector<uint64_t> R;
@@ -66,9 +89,15 @@ class CBC {
         : b(K), R(IV), input(i), output(o) {}
     void encrypt();
     void decrypt();
+    void run(bool enc) override {
+        if (enc)
+            encrypt();
+        else
+            decrypt();
+    }
 };
 
-class CFB {
+class CFB : public Mode {
     // m = z*n s = n = 64
     BasicBlockCypher b;
     vector<uint64_t> R;
@@ -86,9 +115,15 @@ class CFB {
         : b(K), R(IV), input(i), output(o) {}
     void encrypt();
     void decrypt();
+    void run(bool enc) override {
+        if (enc)
+            encrypt();
+        else
+            decrypt();
+    }
 };
 
-class MAC {
+class MAC : public Mode {
     // s = 32
     BasicBlockCypher b;
     uint64_t R;
@@ -99,7 +134,9 @@ class MAC {
     uint64_t K2;
 
    public:
-    MAC(uint32_t K[8], FILE *i, FILE *o);
+    MAC(uint32_t K[8], FILE* i, FILE* o);
 
     void generate();
+    void run(bool enc) override { generate(); }
 };
+}  // namespace Modes

@@ -1,4 +1,5 @@
 #include "modes.h"
+using namespace Modes;
 
 void ECB::encrypt() {
     size_t bytes_read = 0;

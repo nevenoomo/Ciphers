@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-c -std=c++11 -Wall
 DEBUGFLAGS=-g
-HEADERS=basic_block_cypher.cpp modes.h utils.h
+HEADERS=basic_block_cypher.h modes.h utils.h common.h
 SOURCES=main.cpp modes.cpp utils.cpp basic_block_cypher.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=magma.exe 
