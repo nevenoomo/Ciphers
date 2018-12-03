@@ -6,19 +6,18 @@ class Streebog {
     V512 h, N, Sigma;
     FILE *in;
     bool is_512;
-    size_t f_size, len;
 
     void add_in_ring(V512 a, V512 b, V512 dest) {
         uint16_t overrun = 0;
 
-        for (size_t i = BLOCK_SIZE - 1; i >= 0; i--) {
+        for (size_t i = 0; i < BLOCK_SIZE; i++) {
             overrun = a[i] + b[i] + (overrun >> 8);
             dest[i] = (uint8_t)overrun;
         }
     }
 
     void add_in_ring(V512 a, uint32_t b, V512 dest) {
-        for (size_t i = BLOCK_SIZE - 1; i >= 0; i--) {
+        for (size_t i = 0; i < BLOCK_SIZE; i++) {
             b += (uint32_t)a[i];
             dest[i] = b;
             b >>= 8;
@@ -26,7 +25,7 @@ class Streebog {
     }
 
     void xor512(V512 a, V512 b, V512 dest) {
-        for (size_t i = BLOCK_SIZE - 1; i >= 0; i--) {
+        for (size_t i = 0; i < BLOCK_SIZE; i++) {
             dest[i] = a[i] ^ b[i];
         }
     }
@@ -34,13 +33,13 @@ class Streebog {
     void X(V512 k, V512 a, V512 dest) { xor512(k, a, dest); }
 
     void S(V512 a) {
-        for (size_t i = BLOCK_SIZE - 1; i >= 0; i--)
+        for (int i = BLOCK_SIZE - 1; i >= 0; i--)
             a[i] = PI[a[i]];
     }
 
     void P(V512 a) {
         V512 tmp;
-        for (size_t i = BLOCK_SIZE - 1; i >= 0; i--)
+        for (int i = BLOCK_SIZE - 1; i >= 0; i--)
             tmp[i] = a[TAU[i]];
         memcpy(a, tmp, BLOCK_SIZE);
     }
@@ -49,8 +48,8 @@ class Streebog {
         uint64_t *tmp1 = (uint64_t *)a;
         uint64_t tmp2[8];
         memset(tmp2, 0x00, BLOCK_SIZE);
-        for (size_t i = 7; i >= 0; i--) {
-            for (size_t j = BLOCK_SIZE - 1; j >= 0; j--) {
+        for (int i = 7; i >= 0; i--) {
+            for (int j = BLOCK_SIZE - 1; j >= 0; j--) {
                 if ((tmp1[i] >> j) & 1 == 1) { // check the val of bit, then xor
                     tmp2[i] ^= A[BLOCK_SIZE - 1 - j];
                 }
@@ -59,7 +58,7 @@ class Streebog {
         memcpy(a, tmp2, BLOCK_SIZE);
     }
 
-    void get_key(V512 K, int i) {
+    void get_key(V512 K, int i) { // i == 1..13
         xor512(K, C[i - 1], K);
         S(K);
         P(K);
@@ -93,18 +92,21 @@ class Streebog {
         xor512(tmp, m, h);
     }
 
-    size_t file_size(FILE *f) {
-        size_t size = 0;
-        fseek(f, 0, SEEK_END);
-        size = ftell(f);
-        fseek(f, 0, SEEK_SET);
-        return size;
-    }
-
-    void Part2(V512 m) {
+    void Part2(V512 m) { // here we exect |m| == 64b
         g(N, h, m);
         add_in_ring(N, 512, N);
         add_in_ring(Sigma, m, Sigma);
+    }
+
+    void Part3(V512 m, size_t len) { // here we exect |M| == len < 64b in m(starting at 0)
+        memset(m + len, 0x0, BLOCK_SIZE - len);
+        m[len] = 0x01; // may be 0x80
+        g(N, h, m);
+        add_in_ring(N, len, N);
+        add_in_ring(Sigma, m, Sigma);
+        V512 zero = {0};
+        g(zero, h, N);
+        g(zero, h, Sigma);
     }
 
   public:
@@ -116,7 +118,17 @@ class Streebog {
         } else {
             memcpy(h, IV256, BLOCK_SIZE);
         }
+    }
 
-        len = f_size = file_size(in);
+    uint8_t *H() {
+        V512 m;
+        size_t bytes_read = 0;
+        while ((bytes_read = fread(m, sizeof(uint8_t), BLOCK_SIZE, in)) ==
+               BLOCK_SIZE) {
+            Part2(m);
+        }
+        Part3(m, bytes_read);
+        uint8_t *ret = (uint8_t *)malloc(BLOCK_SIZE);
+        memcpy(ret, h, BLOCK_SIZE);
     }
 };
