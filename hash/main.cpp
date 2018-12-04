@@ -2,8 +2,8 @@
 #include "hash.h"
 
 int main(){
-    FILE * f = fopen("test.txt", "rb"), *out = fopen("test2.txt", "wb");
-    Streebog s(f);
+    FILE * f = fopen("example2", "rb"), *out = fopen("output.txt", "wb");
+    Streebog s(f, true);
     uint8_t * ret = s.H();
     fwrite(ret, 1, BLOCK_SIZE, out);
     return 0;
