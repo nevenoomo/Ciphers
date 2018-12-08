@@ -1,4 +1,4 @@
-HEADERS=hash.h hash_data.h coommon.h
+HEADERS=hash.h hash_data.h common.h
 
 all: g256sum g512sum
 
