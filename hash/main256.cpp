@@ -49,7 +49,7 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
 
-    return exit_code;
+    exit(exit_code);
 }
 
 void print_help(ostream &o) {
@@ -168,9 +168,9 @@ void process_file_text(string &name) {
     }
     uint8_t *hash = Streebog(in, is_512).H();
     for (size_t i = 0; i < ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2); ++i) {
-        cout << hex << (unsigned)hash[i];
+        printf("%02x", hash[i]);
     }
-    cout << " " << name << endl;
+    cout << "  " << name << endl;
     fclose(in);
     free(hash);
 }
@@ -195,7 +195,7 @@ void process_file_binary(string &name) {
     }
     uint8_t *hash = Streebog(in, is_512).H();
     for (size_t i = 0; i < ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2); ++i) {
-        cout << hex << (unsigned)hash[i];
+        printf("%02x", hash[i]);
     }
     cout << " *" << name << endl;
     fclose(in);
@@ -252,10 +252,11 @@ void process_file_check(string &name) {
                    ((is_512) ? BLOCK_SIZE : (BLOCK_SIZE / 2))) != 0) {
             not_match++;
             if (!check_options[STATUS]) {
-                cout << line.substr(hash_len + 2) << ": FAILED";
+                cout << line.substr(hash_len + 2) << ": FAILED\n";
             }
-        } else if (!check_options[QUIET]) {
-            cout << line.substr(hash_len + 2) << ": OK";
+
+        } else if (!check_options[QUIET] && !check_options[STATUS]) {
+            cout << line.substr(hash_len + 2) << ": OK\n";
         }
         fclose(in);
         free(real_hash);
@@ -316,22 +317,23 @@ bool ishexdigit(char c) {
 FILE *parse_filename(string &line) {
     size_t hash_len = ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2) * 2;
     string fname = line.substr(hash_len + 2);
-    FILE *res;
+    FILE *res = NULL;
     if (line[hash_len + 1] == ' ') {
         res = fopen(fname.c_str(), "r");
     } else {
         res = fopen(fname.c_str(), "rb");
     }
 
-    if (!check_options[IGNORE]) {
-        cerr << ((is_512) ? "g512sum" : "g256sum") << ": " << fname
-             << ": No such file or directory" << endl;
-        if (!check_options[STATUS]) {
-            cout << fname << ": "
-                 << "FAILED open or read" << endl;
+    if (res == NULL) {
+        if (!check_options[IGNORE]) {
+            cerr << ((is_512) ? "g512sum" : "g256sum") << ": " << fname
+                 << ": No such file or directory" << endl;
+            if (!check_options[STATUS]) {
+                cout << fname << ": "
+                     << "FAILED open or read" << endl;
+            }
         }
     }
-
     return res;
 }
 
@@ -340,7 +342,8 @@ uint8_t *parse_hash(string &line) {
     uint8_t *hash = (uint8_t *)malloc(hash_len);
 
     for (size_t i = 0; i < hash_len; ++i) {
-        hash[i] = hexchartodig(line[i]) * 16 + hexchartodig(line[i + 1]);
+        hash[i] =
+            hexchartodig(line[2 * i]) * 16 + hexchartodig(line[2 * i + 1]);
     }
 
     return hash;
