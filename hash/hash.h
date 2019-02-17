@@ -50,7 +50,8 @@ class Streebog {
         memset(tmp2, 0x00, BLOCK_SIZE);
         for (int i = 7; i >= 0; i--) {
             for (int j = BLOCK_SIZE - 1; j >= 0; j--) {
-                if (((tmp1[i] >> j) & 1) == 1) { // check the val of bit, then xor
+                if (((tmp1[i] >> j) & 1) ==
+                    1) { // check the val of bit, then xor
                     tmp2[i] ^= A[BLOCK_SIZE - 1 - j];
                 }
             }
@@ -98,11 +99,13 @@ class Streebog {
         add_in_ring(Sigma, m, Sigma);
     }
 
-    void Part3(V512 m, size_t len) { // here we exect |M| == len < 64b in m(starting at 0)
+    void
+    Part3(V512 m,
+          size_t len) { // here we exect |M| == len < 64b in m(starting at 0)
         memset(m + len, 0x0, BLOCK_SIZE - len);
         m[len] = 0x01;
         g(N, h, m);
-        add_in_ring(N, len*8, N);
+        add_in_ring(N, len * 8, N);
         add_in_ring(Sigma, m, Sigma);
         V512 zero = {0};
         g(zero, h, N);
@@ -110,7 +113,7 @@ class Streebog {
     }
 
   public:
-    Streebog(FILE *in, bool is_512 = true) : in(in), is_512(is_512) {
+    Streebog(FILE *in = NULL, bool is_512 = true) : in(in), is_512(is_512) {
         memset(N, 0x0, BLOCK_SIZE);
         memset(Sigma, 0x0, BLOCK_SIZE);
         if (is_512) {
@@ -121,6 +124,8 @@ class Streebog {
     }
 
     uint8_t *H() {
+        if (in == NULL)
+            return NULL;
         V512 m;
         size_t bytes_read = 0;
         while ((bytes_read = fread(m, sizeof(uint8_t), BLOCK_SIZE, in)) ==
@@ -130,12 +135,34 @@ class Streebog {
         Part3(m, bytes_read);
         uint8_t *ret;
 
-        if (is_512){
+        if (is_512) {
             ret = (uint8_t *)malloc(BLOCK_SIZE);
             memcpy(ret, h, BLOCK_SIZE);
-        }else{
-            ret = (uint8_t *)malloc(BLOCK_SIZE/2);
-            memcpy(ret, h+BLOCK_SIZE/2, BLOCK_SIZE/2);
+        } else {
+            ret = (uint8_t *)malloc(BLOCK_SIZE / 2);
+            memcpy(ret, h + BLOCK_SIZE / 2, BLOCK_SIZE / 2);
+        }
+
+        return ret;
+    }
+
+    void update(V512 m, size_t size) {
+        if (size == BLOCK_SIZE) {
+            Part2(m);
+        } else {
+            Part3(m, size);
+        }
+    }
+
+    uint8_t *finish() {
+        uint8_t *ret;
+
+        if (is_512) {
+            ret = (uint8_t *)malloc(BLOCK_SIZE);
+            memcpy(ret, h, BLOCK_SIZE);
+        } else {
+            ret = (uint8_t *)malloc(BLOCK_SIZE / 2);
+            memcpy(ret, h + BLOCK_SIZE / 2, BLOCK_SIZE / 2);
         }
 
         return ret;
