@@ -167,10 +167,14 @@ void process_file_text(string &name) {
         return;
     }
     uint8_t *hash = Streebog(in, is_512).H();
-    for (size_t i = 0; i < ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2); ++i) {
-        printf("%02x", hash[i]);
+    for (size_t i = ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2); i > 0; --i) {
+        printf("%02x", hash[i-1]);
     }
-    cout << "  " << name << endl;
+    // for (size_t i = 0; i < ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2); ++i) {
+    //     printf("%02x", hash[i]);
+    // }
+    //This additional output is removed due to task renewal
+    // cout << "  " << name << endl;
     fclose(in);
     free(hash);
 }
@@ -194,10 +198,14 @@ void process_file_binary(string &name) {
         return;
     }
     uint8_t *hash = Streebog(in, is_512).H();
-    for (size_t i = 0; i < ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2); ++i) {
-        printf("%02x", hash[i]);
+    for (size_t i = ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2); i > 0; --i) {
+        printf("%02x", hash[i-1]);
     }
-    cout << " *" << name << endl;
+    // for (size_t i = 0; i < ((is_512) ? BLOCK_SIZE : BLOCK_SIZE / 2); ++i) {
+    //     printf("%02x", hash[i]);
+    // }
+    //This additional output is removed due to task renewal
+    // cout << " *" << name << endl;
     fclose(in);
     free(hash);
 }
