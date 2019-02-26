@@ -6,6 +6,7 @@ class Streebog {
     V512 h, N, Sigma;
     FILE *in;
     bool is_512;
+    std::vector<uint8_t> accum;
 
     void add_in_ring(V512 a, V512 b, V512 dest) {
         uint16_t overrun = 0;
@@ -113,7 +114,7 @@ class Streebog {
     }
 
   public:
-    Streebog(FILE *in = NULL, bool is_512 = true) : in(in), is_512(is_512) {
+    Streebog(FILE *in = NULL, bool is_512 = true) : in(in), is_512(is_512){
         memset(N, 0x0, BLOCK_SIZE);
         memset(Sigma, 0x0, BLOCK_SIZE);
         if (is_512) {
@@ -147,21 +148,45 @@ class Streebog {
     }
 
     void update(V512 m, size_t size) {
-        if (size == BLOCK_SIZE) {
+        if (!accum.empty()){
+            if (size >= BLOCK_SIZE - accum.size()) {
+                accum.insert(accum.end(), m, m + BLOCK_SIZE - accum.size());
+                Part2(&accum[0]);
+                size -= BLOCK_SIZE - accum.size();
+                m += BLOCK_SIZE - accum.size();
+                accum.clear();
+            }else{
+                accum.insert(accum.end(), m, m + size);
+                return;
+            }
+        }
+        while(size >= BLOCK_SIZE){
             Part2(m);
-        } else {
-            Part3(m, size);
+            m += BLOCK_SIZE;
+            size -= BLOCK_SIZE;
+        }
+
+        if (size != 0){
+            accum.insert(accum.end(), m, m+(int)size);
         }
     }
 
-    uint8_t *finish() {
-        uint8_t *ret;
+    uint8_t *finish(uint8_t* buf) {
+        size_t len = accum.size();
+        for (int i = accum.size(); i < BLOCK_SIZE; i++){
+            accum.push_back(0);
+        }
 
+        Part3(&accum[0], len);
+
+        uint8_t *ret;
+        
+        if (buf != NULL) ret = buf;
         if (is_512) {
-            ret = (uint8_t *)malloc(BLOCK_SIZE);
+            if (!buf) ret = (uint8_t *)malloc(BLOCK_SIZE);
             memcpy(ret, h, BLOCK_SIZE);
         } else {
-            ret = (uint8_t *)malloc(BLOCK_SIZE / 2);
+            if (!buf) ret = (uint8_t *)malloc(BLOCK_SIZE / 2);
             memcpy(ret, h + BLOCK_SIZE / 2, BLOCK_SIZE / 2);
         }
 
