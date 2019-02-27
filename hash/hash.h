@@ -147,13 +147,14 @@ class Streebog {
         return ret;
     }
 
-    void update(V512 m, size_t size) {
+    void update(uint8_t * m, size_t size) {
         if (!accum.empty()){
             if (size >= BLOCK_SIZE - accum.size()) {
-                accum.insert(accum.end(), m, m + BLOCK_SIZE - accum.size());
+                size_t len = accum.size(); 
+                accum.insert(accum.end(), m, m + BLOCK_SIZE - len);
                 Part2(&accum[0]);
-                size -= BLOCK_SIZE - accum.size();
-                m += BLOCK_SIZE - accum.size();
+                size -= BLOCK_SIZE - len;
+                m += BLOCK_SIZE - len;
                 accum.clear();
             }else{
                 accum.insert(accum.end(), m, m + size);
@@ -173,11 +174,8 @@ class Streebog {
 
     uint8_t *finish(uint8_t* buf) {
         size_t len = accum.size();
-        for (int i = accum.size(); i < BLOCK_SIZE; i++){
-            accum.push_back(0);
-        }
-
-        Part3(&accum[0], len);
+        accum.insert(accum.end(), BLOCK_SIZE - len,0);
+        Part3(accum.data(), len);
 
         uint8_t *ret;
         
