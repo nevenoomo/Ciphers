@@ -38,7 +38,7 @@ int main(int argc, char const *argv[]) {
         exit(0);
     }
     bool is_A = is_flag_on(argv);
-    KeyGenerator k(rand_bytes, ((is_flag_on(argv))? ECP::setA : ECP::setC));
+    KeyGenerator k(rand_bytes, (is_A)? ECP::setA : ECP::setC);
 
 #ifdef _GEN_PRIV_
     gen_priv(k, argv, argc);

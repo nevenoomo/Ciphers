@@ -36,7 +36,7 @@ bool inline is_flag_on(char const **argv) { return string("-s") == argv[1]; }
 void prologue1(int argc, char const *argv[], ifstream &key, ifstream &in,
                ofstream &out) {
     bool is_512 = is_flag_on(argv);
-    size_t min_argc = is_512 ? 2 : 1;
+    int min_argc = is_512 ? 2 : 1;
 
     if (argc < min_argc + 2) {
         cerr << "Too few arguements\n";
@@ -71,7 +71,7 @@ void prologue1(int argc, char const *argv[], ifstream &key, ifstream &in,
 void prologue2(int argc, char const *argv[], ifstream &key, ifstream &in,
                ifstream &crt) {
     bool is_512 = is_flag_on(argv);
-    size_t min_argc = is_512 ? 2 : 1;
+    int min_argc = is_512 ? 2 : 1;
 
     if (argc < min_argc + 2) {
         cerr << "Too few arguements\n";
@@ -107,7 +107,7 @@ void sign(int argc, char const *argv[]) {
     ifstream key;
     ifstream in;
     ofstream out;
-    size_t size = is_flag_on(argv) ? 32 : 64;
+    int size = is_flag_on(argv) ? 32 : 64;
 
     prologue1(argc, argv, key, in, out);
     BigInteger d(size);
@@ -137,7 +137,7 @@ void verify(int argc, char const *argv[]) {
     ifstream key;
     ifstream in;
     ifstream crt;
-    size_t size = is_flag_on(argv) ? 32 : 64;
+    int size = is_flag_on(argv) ? 32 : 64;
 
     prologue2(argc, argv, key, in, crt);
     ECP::Point Q(ZERO, ONE, size == 64 ? ECP::setC : ECP::setA);

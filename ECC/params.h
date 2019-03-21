@@ -3,49 +3,6 @@
 #define NEUTURAL_POINT ECP::Point();
 // ECP - Elliptic Curve Parametres
 namespace ECP {
-struct Point {
-    BigInteger first;
-    BigInteger second;
-    Params param_set;
-
-    Point(BigInteger first = ZERO, BigInteger second = ONE, Params p = setC)
-        : first(first), second(second), param_set(p) {}
-
-    Point operator+(const Point &p) const { // TODO fill method
-        Point ret;
-        BigInteger tmp =
-            param_set.d * first * p.first * second * p.second; // dx1x2y1y2
-
-        ret.first = (first * p.second + p.first * second) *
-                    ((ONE + tmp).get_inv_mod(param_set.p));
-        ret.second = (second * p.second - param_set.e * first * p.first) *
-                     ((ONE - tmp).get_inv_mod(param_set.p));
-
-        return ret;
-    }
-
-    Point &operator+=(const Point &other) {
-        *this = *this + other;
-        return *this;
-    }
-
-    Point operator*(const BigInteger &other) const {
-        Point Q;
-        Point N = other;
-        size_t m = other.size() * 8; // Number of bytes in other
-        for (size_t i = 0; i < m; ++i) {
-            if (other.get_bit_at(i)) {
-                Q += N;
-            }
-            N += N;
-        }
-    }
-
-    uint8_t *get_first_data() { return first.get_data(); }
-
-    uint8_t *get_second_data() { return second.get_data(); }
-};
-
 struct Params {
     BigInteger p, a, b, e, d, m, q, x, y, u, v;
     bool is_512;
@@ -189,5 +146,50 @@ const Params setC = {
                          0xe1, 0xf5, 0xb1, 0x1f, 0x9d, 0xf7, 0x9a, 0x46},
     .is_512 = false
 
+};
+
+struct Point {
+    BigInteger first;
+    BigInteger second;
+    Params param_set;
+
+    Point(BigInteger first = ZERO, BigInteger second = ONE, Params p = setC)
+        : first(first), second(second), param_set(p) {}
+
+    Point operator+(const Point &p) const { // TODO fill method
+        Point ret;
+        BigInteger tmp =
+            param_set.d * first * p.first * second * p.second; // dx1x2y1y2
+
+        ret.first = (first * p.second + p.first * second) *
+                    ((ONE + tmp).get_inv_mod(param_set.p));
+        ret.second = (second * p.second - param_set.e * first * p.first) *
+                     ((ONE - tmp).get_inv_mod(param_set.p));
+
+        return ret;
+    }
+
+    Point &operator+=(const Point &other) {
+        *this = *this + other;
+        return *this;
+    }
+
+    Point operator*(const BigInteger &other) const {
+        Point Q;
+        Point N = other;
+        size_t m = other.size() * 8; // Number of bytes in other
+        for (size_t i = 0; i < m; ++i) {
+            if (other.get_bit_at(i)) {
+                Q += N;
+            }
+            N += N;
+        }
+
+        return Q;
+    }
+
+    uint8_t *get_first_data() { return first.get_data(); }
+
+    uint8_t *get_second_data() { return second.get_data(); }
 };
 }; // namespace ECP

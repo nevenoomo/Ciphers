@@ -1,5 +1,5 @@
 #pragma once
-#include "hash.h"
+#include "hash/hash.h"
 #include "BigInteger.h"
 #include "common.h"
 #include "params.h"
@@ -62,7 +62,7 @@ class ECC {
 
     bool verify(uint8_t *signature, const ECP::Point &Q) {
         if (!signature) {
-            return;
+            return false;
         }
 
         r = BigInteger(size);

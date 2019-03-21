@@ -1,3 +1,4 @@
+#pragma once
 #include "common.h"
 #define ZERO BigInteger(1)
 #define ONE BigInteger(1, true, 1)
@@ -16,8 +17,6 @@ class BigInteger {
     size_t size() const { return data.size(); }
 
     uint8_t *get_data() { return data.data(); }
-
-    BigInteger get_inv_mod(const BigInteger &modulo) const {}
 
     static BigInteger gcd(const BigInteger &a, const BigInteger &b,
                           BigInteger &x, BigInteger &y) {
@@ -144,7 +143,7 @@ class BigInteger {
 
         bool lt = true;
         for (int i = size() - 1; i >= 0 && lt; --i) {
-            lt = (data[i] < other.data[i] == plus);
+            lt = ((data[i] < other.data[i]) == plus);
         }
 
         return lt;
@@ -173,7 +172,7 @@ class BigInteger {
                 continue;
 
             uint8_t mcarry = 0;
-            for (int j = 0, k = i; j < other.size(); ++j, ++k) {
+            for (size_t j = 0, k = i; j < other.size(); ++j, ++k) {
                 // k = i + j
                 uint16_t val = data[i] * other.data[j] + ret.data[k] + mcarry;
 

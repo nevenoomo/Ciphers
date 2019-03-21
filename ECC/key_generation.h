@@ -25,4 +25,4 @@ class KeyGenerator {
         ECP::Point P(params.u, params.v, params);
         Q = P*d;
     }
-}
+};
