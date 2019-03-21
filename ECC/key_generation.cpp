@@ -38,7 +38,7 @@ int main(int argc, char const *argv[]) {
         exit(0);
     }
     bool is_A = is_flag_on(argv);
-    KeyGenerator k(rand_bytes, ECP::Params(is_A));
+    KeyGenerator k(rand_bytes, ((is_flag_on(argv))? ECP::setA : ECP::setC));
 
 #ifdef _GEN_PRIV_
     gen_priv(k, argv, argc);
@@ -55,6 +55,7 @@ bool inline is_flag_on(char const **argv) { return string("-s") == argv[1]; }
 
 void gen_priv(const KeyGenerator &k, char const **argv, int argc) {
     ofstream out_file;
+    size_t size = is_flag_on(argv) ? 64 : 32;
     if (!is_flag_on(argv)) {
         if (argc == 2) {
             cerr << "No filename given\n";
@@ -71,13 +72,16 @@ void gen_priv(const KeyGenerator &k, char const **argv, int argc) {
 
     BigInteger d;
     k.gen_priv_key(d);
-    out_file << d.get_data();
+    d.fit_to_size(size);
+    reverse(d.get_data(), d.get_data() + d.size());
+    out_file.write((char *)d.get_data(), size);
     out_file.close();
 }
 
 void gen_pub(const KeyGenerator &k, char const **argv, int argc) {
     ifstream in_file;
     ofstream out_file;
+    size_t size = is_flag_on(argv) ? 64 : 32;
 
     if (!is_flag_on(argv)) {
         if (argc == 2) {
@@ -111,11 +115,15 @@ void gen_pub(const KeyGenerator &k, char const **argv, int argc) {
         exit(1);
     }
 
-    BigInteger d(ECP::Params(is_flag_on(argv)).q.size());
+    BigInteger d(size);
     in_file.read((char *)d.get_data(), d.size());
+    reverse(d.get_data(), d.get_data() + d.size());
     ECP::Point Q;
     k.gen_pub_key(Q, d);
-    out_file << Q.first() << " " << Q.second();
+    reverse(Q.get_first_data(), Q.get_first_data() + size);
+    reverse(Q.get_second_data(), Q.get_second_data() + size);
+    out_file.write((char *)Q.get_first_data(), size);
+    out_file.write((char *)Q.get_second_data(), size);
 
     in_file.close();
     out_file.close();

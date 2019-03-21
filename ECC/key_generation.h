@@ -2,8 +2,6 @@
 #include "common.h"
 #include "params.h"
 
-typedef int (*prnd_func)(uint8_t *buf, int num);
-
 class KeyGenerator {
     prnd_func rnd;
     ECP::Params params;
@@ -16,7 +14,7 @@ class KeyGenerator {
         BigInteger tmp(params.q.size());
         while(!correct){
             rnd(tmp.get_data(), tmp.size());
-            if (0 < tmp && tmp < params.q){
+            if (ZERO < tmp && tmp < params.q){
                 correct = true;
             }
         }  
@@ -24,6 +22,7 @@ class KeyGenerator {
     }
 
     void gen_pub_key(ECP::Point& Q, const BigInteger& d) const{
-        Q = params.P_edwards*d;
+        ECP::Point P(params.u, params.v, params);
+        Q = P*d;
     }
 }

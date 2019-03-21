@@ -5,5 +5,7 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <exception>
 
 using namespace std;
+typedef int (*prnd_func)(uint8_t *buf, int num);

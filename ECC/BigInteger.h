@@ -10,11 +10,38 @@ class BigInteger {
   public:
     BigInteger(vector<uint8_t> data, bool plus = true)
         : data(data), plus(plus) {}
-    BigInteger(size_t size = 0, bool plus = true, uint8_t val = 0) : data(size, val), plus(plus) {}
+    BigInteger(size_t size = 0, bool plus = true, uint8_t val = 0)
+        : data(size, val), plus(plus) {}
 
     size_t size() const { return data.size(); }
 
     uint8_t *get_data() { return data.data(); }
+
+    BigInteger get_inv_mod(const BigInteger &modulo) const {}
+
+    static BigInteger gcd(const BigInteger &a, const BigInteger &b,
+                          BigInteger &x, BigInteger &y) {
+        if (a == ZERO) {
+            x = ZERO;
+            y = ONE;
+            return b;
+        }
+        BigInteger x1, y1;
+        BigInteger d = gcd(b % a, a, x1, y1);
+        x = y1 - (b / a) * x1;
+        y = x1;
+        return d;
+    }
+
+    BigInteger get_inv_mod(const BigInteger& m) const{
+        BigInteger x,y;
+        BigInteger g = gcd(*this, m, x, y);
+        if (g != ONE){
+            throw logic_error("Bad elliptic parametres");            
+        }
+        x = (x % m + m) % m;
+        return x;
+    }
 
     BigInteger operator+(const BigInteger &other) const {
         if (!plus && other.plus) {
@@ -94,6 +121,10 @@ class BigInteger {
         return eq;
     }
 
+    bool operator!=(const BigInteger &other) const{
+        return ! (*this == other);
+    }
+
     bool operator<(const BigInteger &other) const {
         if (!plus && other.plus)
             return true;
@@ -134,7 +165,7 @@ class BigInteger {
             return ZERO;
         }
 
-        BigInteger ret(size()+other.size());
+        BigInteger ret(size() + other.size());
         ret.plus = plus == other.plus;
 
         for (size_t i = 0; i < size(); ++i) {
@@ -158,36 +189,36 @@ class BigInteger {
         return ret;
     }
 
-    BigInteger& operator*=(const BigInteger &other) {
-        *this = *this*other;
+    BigInteger &operator*=(const BigInteger &other) {
+        *this = *this * other;
         return *this;
     }
 
-    BigInteger& operator++(){
+    BigInteger &operator++() {
         *this = *this + ONE;
         return *this;
     }
 
-    BigInteger& operator-=(const BigInteger &other){
+    BigInteger &operator-=(const BigInteger &other) {
         *this = *this - other;
         return *this;
     }
 
-    BigInteger operator/(const BigInteger &other) const{
-        if (*this == other){
+    BigInteger operator/(const BigInteger &other) const {
+        if (*this == other) {
             return ONE;
         }
 
-        if (*this < other){
+        if (*this < other) {
             return ZERO;
         }
 
         BigInteger ret;
-        
+
         BigInteger left(*this), was(other);
         left.plus = true;
         was.plus = true;
-        while(left > was){
+        while (left > was) {
             left -= was;
             ++ret;
         }
@@ -196,31 +227,39 @@ class BigInteger {
         return ret;
     }
 
-    BigInteger operator%(const BigInteger &other) const{
-        if (*this == other){
+    BigInteger operator%(const BigInteger &other) const {
+        if (*this == other) {
             return ONE;
         }
 
-        if (*this < other){
+        if (*this < other) {
             return ZERO;
         }
 
         BigInteger ret;
-        
+
         BigInteger left(*this), was(other);
         left.plus = true;
         was.plus = true;
 
-        while(left > was){
+        while (left > was) {
             left -= was;
             ++ret;
         }
-        
-        if (plus != other.plus){
+
+        if (plus != other.plus) {
             left = other - left;
         }
 
         return left;
+    }
+
+    bool get_bit_at(size_t i) const { return data[i / 8] & (0x1 << (i % 8)); }
+
+    void fit_to_size(size_t s){
+        for(size_t i = size(); i < s; ++i){
+            data.push_back(0x0);
+        }
     }
 
     void trim() {
