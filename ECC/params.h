@@ -161,10 +161,18 @@ struct Point {
         BigInteger tmp =
             param_set.d * first * p.first * second * p.second; // dx1x2y1y2
 
-        ret.first = (first * p.second + p.first * second) *
-                    ((BigInteger::ONE + tmp).get_inv_mod(param_set.p)) % param_set.p;
-        ret.second = (second * p.second - param_set.e * first * p.first) *
-                     ((BigInteger::ONE - tmp).get_inv_mod(param_set.p)) % param_set.p;
+        ret.first = ((first * p.second + p.first * second) *
+                    ((BigInteger::ONE + tmp).get_inv_mod(param_set.p))) % param_set.p;
+
+        //TODO clear
+        // ret.first = (first * p.second + p.first * second);
+        // BigInteger tmp3 = (BigInteger::ONE + tmp);
+        // BigInteger tmp2 = tmp3.get_inv_mod(param_set.p);
+        // ret.first = ret.first * tmp2;
+        // ret.first = ret.first % param_set.p;
+
+        ret.second = ((second * p.second - param_set.e * first * p.first) *
+                     ((BigInteger::ONE - tmp).get_inv_mod(param_set.p))) % param_set.p;
 
         return ret;
     }
@@ -177,8 +185,13 @@ struct Point {
     Point operator*(const BigInteger &other) const {
         Point Q(BigInteger::ZERO, BigInteger::ONE, this->param_set);
         Point N(*this);
-        size_t m = other.size() * 8; // Number of bits in other
-        for (size_t i = 0; i < m; ++i) {
+        size_t m = other.size() * 8 - 1; // Last bit idx 
+
+        while (!other.get_bit_at(m)) {
+            m--;
+        }
+
+        for (size_t i = 0; i <= m; ++i) {
             if (other.get_bit_at(i)) {
                 Q += N;
             }

@@ -24,5 +24,8 @@ class KeyGenerator {
     void gen_pub_key(ECP::Point& Q, const BigInteger& d) const{
         ECP::Point P(params.u, params.v, params);
         Q = P*d;
+        size_t size = params.is_512 ? 64 : 32;
+        Q.first.fit_to_size(size);
+        Q.second.fit_to_size(size);
     }
 };
