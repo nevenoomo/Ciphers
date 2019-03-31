@@ -26,6 +26,7 @@ char usage_str[] =
 
 void print_usage();
 bool is_flag_on(char const **argv);
+
 #ifdef _GEN_PRIV_
 void gen_priv(const KeyGenerator &k, char const **argv, int argc);
 #else
@@ -38,7 +39,7 @@ int main(int argc, char const *argv[]) {
         exit(0);
     }
     bool is_A = is_flag_on(argv);
-    KeyGenerator k(rand_bytes, (is_A)? ECP::setA : ECP::setC);
+    KeyGenerator k(rand_bytes, (is_A) ? ECP::setA : ECP::setC);
 
 #ifdef _GEN_PRIV_
     gen_priv(k, argv, argc);
@@ -55,10 +56,12 @@ bool inline is_flag_on(char const **argv) { return string("-s") == argv[1]; }
 
 void gen_priv(const KeyGenerator &k, char const **argv, int argc) {
     ofstream out_file;
-    size_t size = is_flag_on(argv) ? 64 : 32;
-    if (!is_flag_on(argv)) {
+    size_t size = is_flag_on(argv) ? 32 : 64;
+
+    if (is_flag_on(argv)) {
         if (argc == 2) {
             cerr << "No filename given\n";
+            exit(1);
         }
         out_file.open(argv[2], ios_base::binary);
     } else {
@@ -81,47 +84,55 @@ void gen_priv(const KeyGenerator &k, char const **argv, int argc) {
 void gen_pub(const KeyGenerator &k, char const **argv, int argc) {
     ifstream in_file;
     ofstream out_file;
-    size_t size = is_flag_on(argv) ? 64 : 32;
+    size_t size = is_flag_on(argv) ? 32 : 64;
 
-    if (!is_flag_on(argv)) {
+    if (is_flag_on(argv)) {
         if (argc == 2) {
             cerr << "No filename given\n";
+            exit(1);
         }
         in_file.open(argv[2], ios_base::binary);
         if (argc > 3) {
             out_file.open(argv[3], ios_base::binary);
-            if (!out_file.is_open()) {
-                cerr << "ERROR: cannot open file specified\n";
-                exit(1);
-            }
-        }else{
-            out_file.open(string(argv[2])+".pub", ios_base::binary);
+        } else {
+            out_file.open(string(argv[2]) + ".pub", ios_base::binary);
         }
     } else {
         in_file.open(argv[1], ios_base::binary);
         if (argc > 2) {
             out_file.open(argv[2], ios_base::binary);
-            if (!out_file.is_open()) {
-                cerr << "ERROR: cannot open file specified\n";
-                exit(1);
-            }
-        }else{
-            out_file.open(string(argv[1])+".pub", ios_base::binary);
+        } else {
+            out_file.open(string(argv[1]) + ".pub", ios_base::binary);
         }
     }
 
     if (!in_file.is_open()) {
-        cerr << "ERROR: cannot open file(s) specified\n";
+        cerr << "ERROR: cannot open private key file\n";
+        exit(1);
+    } else if (!out_file.is_open()) {
+        cerr << "ERROR: cannot open output file\n";
+        in_file.close();
         exit(1);
     }
 
     BigInteger d(size);
+
     in_file.read((char *)d.get_data(), d.size());
+    if (in_file.gcount() != (int)d.size()) {
+        cerr << "Unexpected private key size. Check -s option\n";
+        in_file.close();
+        out_file.close();
+        exit(1);
+    }
+
     reverse(d.get_data(), d.get_data() + d.size());
-    ECP::Point Q;
+    ECP::Point Q(BigInteger::ZERO, BigInteger::ZERO,
+                 (size == 32) ? ECP::setA : ECP::setA);
     k.gen_pub_key(Q, d);
+
     reverse(Q.get_first_data(), Q.get_first_data() + size);
     reverse(Q.get_second_data(), Q.get_second_data() + size);
+
     out_file.write((char *)Q.get_first_data(), size);
     out_file.write((char *)Q.get_second_data(), size);
 

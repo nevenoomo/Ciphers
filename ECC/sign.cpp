@@ -140,7 +140,7 @@ void verify(int argc, char const *argv[]) {
     int size = is_flag_on(argv) ? 32 : 64;
 
     prologue2(argc, argv, key, in, crt);
-    ECP::Point Q(ZERO, ONE, size == 64 ? ECP::setC : ECP::setA);
+    ECP::Point Q(BigInteger::ZERO, BigInteger::ONE, size == 64 ? ECP::setC : ECP::setA);
 
     key.read((char *)Q.get_first_data(), size);
     if (key.gcount() != size) {

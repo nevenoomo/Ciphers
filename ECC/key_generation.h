@@ -14,7 +14,7 @@ class KeyGenerator {
         BigInteger tmp(params.q.size());
         while(!correct){
             rnd(tmp.get_data(), tmp.size());
-            if (ZERO < tmp && tmp < params.q){
+            if (BigInteger::ZERO < tmp && tmp < params.q){
                 correct = true;
             }
         }  

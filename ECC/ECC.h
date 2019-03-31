@@ -1,7 +1,7 @@
 #pragma once
-#include "hash/hash.h"
 #include "BigInteger.h"
 #include "common.h"
+#include "hash/hash.h"
 #include "params.h"
 
 class ECC {
@@ -15,10 +15,10 @@ class ECC {
     void gen_new_k() {
         while (true) {
             rnd(k.get_data(), k.size());
-            if (ZERO < k && k < param_set.q) {
+            if (BigInteger::ZERO < k && k < param_set.q) {
                 ECP::Point C = P * k;
                 r = C.first % param_set.q;
-                if (r != ZERO) {
+                if (r != BigInteger::ZERO) {
                     break;
                 }
             }
@@ -41,14 +41,14 @@ class ECC {
         BigInteger h(size);
         hash.finish(h.get_data());
         e = h % param_set.q;
-        if (e == ZERO) {
-            e = ONE;
+        if (e == BigInteger::ZERO) {
+            e = BigInteger::ONE;
         }
 
         while (true) {
             gen_new_k();
             s = (r * d + k * e) % param_set.q;
-            if (s != ZERO) {
+            if (s != BigInteger::ZERO) {
                 break;
             }
         }
@@ -73,7 +73,8 @@ class ECC {
         memcpy(s.get_data(), signature + size, size);
         reverse(s.get_data(), s.get_data() + size);
 
-        if (!((ZERO < r && r < param_set.q) && (ZERO < s && s < param_set.q))) {
+        if (!((BigInteger::ZERO < r && r < param_set.q) &&
+              (BigInteger::ZERO < s && s < param_set.q))) {
             return false;
         }
 
@@ -81,8 +82,8 @@ class ECC {
         hash.finish(h.get_data());
 
         e = h % param_set.q;
-        if (e == ZERO) {
-            e = ONE;
+        if (e == BigInteger::ZERO) {
+            e = BigInteger::ONE;
         }
 
         BigInteger v = e.get_inv_mod(param_set.q);

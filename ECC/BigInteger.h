@@ -1,7 +1,5 @@
 #pragma once
 #include "common.h"
-#define ZERO BigInteger(1)
-#define ONE BigInteger(1, true, 1)
 
 class BigInteger {
   private:
@@ -9,6 +7,9 @@ class BigInteger {
     bool plus;
 
   public:
+    static const BigInteger ZERO;
+    static const BigInteger ONE;
+
     BigInteger(vector<uint8_t> data, bool plus = true)
         : data(data), plus(plus) {}
     BigInteger(size_t size = 0, bool plus = true, uint8_t val = 0)
@@ -32,39 +33,42 @@ class BigInteger {
         return d;
     }
 
-    BigInteger get_inv_mod(const BigInteger& m) const{
-        BigInteger x,y;
+    BigInteger get_inv_mod(const BigInteger &m) const {
+        BigInteger x, y;
         BigInteger g = gcd(*this, m, x, y);
-        if (g != ONE){
-            throw logic_error("Bad elliptic parametres");            
+        if (g != ONE) {
+            throw logic_error("Bad elliptic parametres");
         }
         x = (x % m + m) % m;
         return x;
     }
 
     BigInteger operator+(const BigInteger &other) const {
-        if (!plus && other.plus) {
-            return other - (-*this);
+        BigInteger a(*this), b(other);
+        a.trim();
+        b.trim();
+        if (!a.plus && b.plus) {
+            return b - (-a);
+        } else if (a.plus && !b.plus) {
+            return a - (-b);
         }
-        if (plus && !other.plus) {
-            return *this - (-other);
-        }
-        size_t ret_size = (size() > other.size()) ? size() : other.size();
-        BigInteger ret(ret_size, plus);
+
+        size_t ret_size = (a.size() > b.size()) ? a.size() : b.size();
+        a.fit_to_size(ret_size);
+        b.fit_to_size(ret_size);
 
         uint8_t carry = 0x0;
         for (size_t i = 0; i < ret_size; ++i) {
-            uint16_t sum = data[i] + other.data[i] + carry;
+            uint16_t sum = a.data[i] + b.data[i] + carry;
             carry = sum >> 8;
-            ret.data[i] = (uint8_t)sum; // REVIEW endiannes
+            a.data[i] = (uint8_t)sum;
         }
 
         if (carry) {
-            ret.data.push_back(carry);
+            a.data.push_back(carry);
         }
 
-        ret.trim();
-        return ret;
+        return a;
     }
 
     BigInteger operator-() const {
@@ -74,34 +78,34 @@ class BigInteger {
     }
 
     BigInteger operator-(const BigInteger &other) const {
-        if (plus && !other.plus) {
-            return *this + other;
-        }
-        if (!plus && other.plus) {
-            return *this + (-other);
-        }
-        if (*this < other) {
-            return -(other - *this);
-        }
-        if (*this == other) {
-            return BigInteger(vector<uint8_t>(1, 0)); // ZERO
+        BigInteger a(*this), b(other);
+        a.trim();
+        b.trim();
+
+        if (a.plus != b.plus) {
+            return a + (-b);
+        } else if (a < b) {
+            return -(b - a);
+        } else if (a == b) {
+            return ZERO;
         }
 
-        size_t ret_size = (size() > other.size()) ? size() : other.size();
-        BigInteger ret(ret_size, plus);
+        size_t ret_size = (a.size() > b.size()) ? a.size() : b.size();
+        a.fit_to_size(ret_size);
+        b.fit_to_size(ret_size);
 
         uint8_t borrow = 0;
         for (size_t i = 0; i < ret_size; ++i) {
-            uint16_t sub = data[i] - other.data[i] - borrow;
+            uint16_t sub = a.data[i] - b.data[i] - borrow;
             if (sub < 0) {
                 borrow = 1;
                 sub += 0x100;
             }
-            ret.data[i] = (uint8_t)sub;
+            a.data[i] = (uint8_t)sub;
         }
 
-        ret.trim();
-        return ret;
+        a.trim();
+        return a;
     }
 
     bool operator==(const BigInteger &other) const {
@@ -120,33 +124,33 @@ class BigInteger {
         return eq;
     }
 
-    bool operator!=(const BigInteger &other) const{
-        return ! (*this == other);
-    }
+    bool operator!=(const BigInteger &other) const { return !(*this == other); }
 
     bool operator<(const BigInteger &other) const {
-        if (!plus && other.plus)
-            return true;
-        if (plus && !other.plus)
-            return false;
-        if (plus) {
-            if (size() < other.size())
+        BigInteger a(*this), b(other);
+        a.trim();
+        b.trim();
+        if (a.plus != b.plus)
+            return a.plus < b.plus;
+
+        if (a.plus) {
+            if (a.size() < b.size())
                 return true;
-            else if (size() > other.size())
+            else if (a.size() > b.size())
                 return false;
         } else {
-            if (size() < other.size())
+            if (a.size() < b.size())
                 return false;
-            else if (size() > other.size())
+            else if (a.size() > b.size())
                 return true;
         }
-
-        bool lt = true;
-        for (int i = size() - 1; i >= 0 && lt; --i) {
-            lt = ((data[i] < other.data[i]) == plus);
+        // here we are garantied the same size
+        for (int i = a.size() - 1; i >= 0; --i) {
+            if (a.data[i] != b.data[i])
+                return ((a.data[i] < b.data[i]) == plus);
         }
 
-        return lt;
+        return false;
     }
 
     bool operator>(const BigInteger &other) const { return other < *this; }
@@ -204,59 +208,103 @@ class BigInteger {
     }
 
     BigInteger operator/(const BigInteger &other) const {
-        if (*this == other) {
-            return ONE;
-        }
+        BigInteger a(*this), b(other);
+        a.trim();
+        b.trim();
+        a.plus = b.plus = true;
 
-        if (*this < other) {
+        if (b == ZERO) {
+            throw runtime_error("Cannot divide by zero");
+        }else if (a == b) {
+            return ONE;
+        }else if (a < b) {
             return ZERO;
         }
 
-        BigInteger ret;
+        BigInteger Q, R;
+        Q.fit_to_size(a.size());
+        R.fit_to_size(a.size());
 
-        BigInteger left(*this), was(other);
-        left.plus = true;
-        was.plus = true;
-        while (left > was) {
-            left -= was;
-            ++ret;
+        int i = a.size() * 8 - 1;
+
+        while (!a.get_bit_at(i)) {
+            i--;
         }
-        ret.plus = plus == other.plus;
 
-        return ret;
+        for (; i >= 0; --i) {
+            R.shl1();
+            R.setbit(0, a.get_bit_at(i));
+            if (R >= other) {
+                R -= other;
+                Q.setbit(i, 1);
+            }
+        }
+
+        Q.trim();
+        Q.plus = this->plus == other.plus;
+        return Q;
+    }
+
+    void shl1() {
+        uint8_t carry = 0;
+        size_t len = this->size();
+        for (size_t i = 0; i < len; ++i) {
+            uint8_t tmp = data[i] & 0x80; // save upper bit
+            data[i] = (data[i] << 1) | carry;
+            carry = tmp;
+        }
+    }
+
+    void setbit(size_t pos, uint8_t val) {
+        data[pos / 8] =
+            (data[pos / 8] & ~(1UL << (pos % 8))) | (val << (pos % 8));
     }
 
     BigInteger operator%(const BigInteger &other) const {
-        if (*this == other) {
-            return ONE;
-        }
+        BigInteger a(*this), b(other);
+        a.trim();
+        b.trim();
+        a.plus = b.plus = true;
 
-        if (*this < other) {
+        if (b == ZERO) {
+            throw runtime_error("Cannot divide by zero");
+        }else if (a == b) {
+            return ONE;
+        }else if (a < b) {
             return ZERO;
         }
 
-        BigInteger ret;
+        BigInteger Q, R;
+        Q.fit_to_size(a.size());
+        R.fit_to_size(a.size());
 
-        BigInteger left(*this), was(other);
-        left.plus = true;
-        was.plus = true;
+        int i = a.size() * 8 - 1;
 
-        while (left > was) {
-            left -= was;
-            ++ret;
+        while (!a.get_bit_at(i)) {
+            i--;
         }
 
-        if (plus != other.plus) {
-            left = other - left;
+        for (; i >= 0; --i) {
+            R.shl1();
+            R.setbit(0, a.get_bit_at(i));
+            if (R >= other) {
+                R -= other;
+                Q.setbit(i, 1);
+            }
         }
 
-        return left;
+        R.trim();
+        if (plus != other.plus){
+            R = b - R;
+        }
+
+        return R;
     }
 
     bool get_bit_at(size_t i) const { return data[i / 8] & (0x1 << (i % 8)); }
 
-    void fit_to_size(size_t s){
-        for(size_t i = size(); i < s; ++i){
+    void fit_to_size(size_t s) {
+        for (size_t i = size(); i < s; ++i) {
             data.push_back(0x0);
         }
     }
@@ -266,3 +314,6 @@ class BigInteger {
             data.pop_back();
     }
 };
+
+const BigInteger BigInteger::ZERO = BigInteger(1);
+const BigInteger BigInteger::ONE = BigInteger(1, true, 1);
