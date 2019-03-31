@@ -34,14 +34,14 @@ class BigInteger {
     }
 
     BigInteger get_inv_mod(const BigInteger &m) const {
-        // BigInteger x, y;
-        // BigInteger g = gcd(*this, m, x, y);
-        // if (g != ONE) {
-        //     throw logic_error("Bad elliptic parametres");
-        // }
-        // x = (x % m + m) % m;
-        // return x;
-        return pow_mod(m - (ONE + ONE), m); // HACK
+        BigInteger x, y;
+        BigInteger g = gcd(*this, m, x, y);
+        if (g != ONE) {
+            throw logic_error("Bad elliptic parametres");
+        }
+        x = (x % m + m) % m;
+        return x;
+        //return pow_mod(m - (ONE + ONE), m); // HACK
     }
 
     BigInteger pow_mod(const BigInteger &power,
@@ -319,6 +319,7 @@ class BigInteger {
             R.setbit(0, a.get_bit_at(i));
             if (R >= b) {
                 R -= b;
+                R.fit_to_size(a.size());
                 Q.setbit(i, 1);
             }
         }
