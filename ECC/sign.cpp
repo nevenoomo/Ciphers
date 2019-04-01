@@ -10,7 +10,7 @@ char usage_str[] =
     "           id-tc26-gost-3410-2012-256-paramSetA (МР 26.2.002-2018 Б.1).\n"
     "           По умолчанию используется набор:\n"
     "           id-tc26-gost-3410-2012-512-paramSetС (МР 26.2.002-2018 Б.2).\n"
-    "           priv-key – название файла (путь к файлу) с приватным ключом.\n"
+    "priv-key   название файла (путь к файлу) с приватным ключом.\n"
     "pub-key    название файла (путь к файлу) с открытым ключом.\n"
     "file       название файла (путь к файлу), для которого вычисляется ЭЦП.\n"
     "crt        название файла (путь к файлу) c подписью. По умолчанию "
@@ -22,7 +22,7 @@ char usage_str[] =
     "           id-tc26-gost-3410-2012-256-paramSetA (МР 26.2.002-2018 Б.1).\n"
     "           По умолчанию используется набор:\n"
     "           id-tc26-gost-3410-2012-512-paramSetС (МР 26.2.002-2018 Б.2).\n"
-    "           priv-key – название файла (путь к файлу) с приватным ключом.\n"
+    "priv-key   название файла (путь к файлу) с приватным ключом.\n"
     "pub-key    название файла (путь к файлу) с открытым ключом.\n"
     "file       название файла (путь к файлу), для которого вычисляется ЭЦП.\n"
     "crt        название файла (путь к файлу) c подписью. По умолчанию "
@@ -127,6 +127,8 @@ void sign(int argc, char const *argv[]) {
         bytes_read = in.gcount();
         if (bytes_read)
             signer.update(buf, bytes_read);
+        else
+            break;      
     }
     signer.sign(buf, d);
 
@@ -141,6 +143,8 @@ void verify(int argc, char const *argv[]) {
 
     prologue2(argc, argv, key, in, crt);
     ECP::Point Q(BigInteger::ZERO, BigInteger::ONE, size == 64 ? ECP::setC : ECP::setA);
+    Q.first.fit_to_size(size);
+    Q.second.fit_to_size(size);
 
     key.read((char *)Q.get_first_data(), size);
     if (key.gcount() != size) {
@@ -162,11 +166,13 @@ void verify(int argc, char const *argv[]) {
 
     uint8_t buf[128];
     size_t bytes_read;
-    while (!in.eof()) { // REVIEW
+    while (!in.eof()) {
         in.read((char *)buf, sizeof(buf));
         bytes_read = in.gcount();
         if (bytes_read)
             signer.update(buf, bytes_read);
+        else 
+            break;
     }
 
     crt.read((char *)buf, size * 2);
@@ -175,6 +181,7 @@ void verify(int argc, char const *argv[]) {
         cout << "Valid!\n";
         return;
     }
+    
     cout << "Invalid\n";
     exit(1);
 }

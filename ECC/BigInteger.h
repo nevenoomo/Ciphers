@@ -301,7 +301,7 @@ class BigInteger {
         } else if (a == b) {
             return ZERO;
         } else if (a < b) {
-            return a;
+            return plus ? a : b - a;
         }
 
         BigInteger Q, R;

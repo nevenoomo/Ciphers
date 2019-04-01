@@ -13,6 +13,7 @@ class ECC {
     ECP::Point P;
 
     void gen_new_k() {
+        k.fit_to_size(size);
         while (true) {
             rnd(k.get_data(), k.size());
             if (BigInteger::ZERO < k && k < param_set.q) {
@@ -56,6 +57,9 @@ class ECC {
         r.fit_to_size(size);
         s.fit_to_size(size);
 
+        reverse(r.get_data(), r.get_data() + size);
+        reverse(s.get_data(), s.get_data() + size);
+
         memcpy(res, r.get_data(), size);
         memcpy(res + size, s.get_data(), size);
     }
@@ -88,7 +92,8 @@ class ECC {
 
         BigInteger v = e.get_inv_mod(param_set.q);
 
-        BigInteger z1 = (s * v) % param_set.q, z2 = (-r * v) % param_set.q;
+        BigInteger z1 = (s * v) % param_set.q;
+        BigInteger z2 = (-(r * v)) % param_set.q;
 
         ECP::Point C = P * z1 + Q * z2;
 
