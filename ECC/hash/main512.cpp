@@ -309,7 +309,6 @@ bool verify_line(string &line) {
     }
 
     for (size_t i = hash_len + 2; i < line.size(); ++i) {
-        // FIXME space may be in fname
         if (!(isalnum(line[i]) || ispunct(line[i]))) {
             return false;
         }

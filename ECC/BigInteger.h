@@ -41,7 +41,6 @@ class BigInteger {
         }
         x = (x % m + m) % m;
         return x;
-        //return pow_mod(m - (ONE + ONE), m); // HACK
     }
 
     BigInteger pow_mod(const BigInteger &power,

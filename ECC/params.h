@@ -164,13 +164,6 @@ struct Point {
         ret.first = ((first * p.second + p.first * second) *
                     ((BigInteger::ONE + tmp).get_inv_mod(param_set.p))) % param_set.p;
 
-        //TODO clear
-        // ret.first = (first * p.second + p.first * second);
-        // BigInteger tmp3 = (BigInteger::ONE + tmp);
-        // BigInteger tmp2 = tmp3.get_inv_mod(param_set.p);
-        // ret.first = ret.first * tmp2;
-        // ret.first = ret.first % param_set.p;
-
         ret.second = ((second * p.second - param_set.e * first * p.first) *
                      ((BigInteger::ONE - tmp).get_inv_mod(param_set.p))) % param_set.p;
 

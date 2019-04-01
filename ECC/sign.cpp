@@ -122,7 +122,7 @@ void sign(int argc, char const *argv[]) {
 
     uint8_t buf[128];
     size_t bytes_read;
-    while (!in.eof()) { // REVIEW
+    while (!in.eof()) { 
         in.read((char *)buf, sizeof(buf));
         bytes_read = in.gcount();
         if (bytes_read)
