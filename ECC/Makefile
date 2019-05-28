@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-g -std=c++11 -Wall
+CFLAGS=-g -std=c++11 -Wall -O2
 KEYGEN_SOURCE=key_generation.cpp
 KEYGEN_HEADERS=key_generation.h
 ECC_SOURCE=sign.cpp

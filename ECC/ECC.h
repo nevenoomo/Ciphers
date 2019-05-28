@@ -18,6 +18,7 @@ class ECC {
             rnd(k.get_data(), k.size());
             if (BigInteger::ZERO < k && k < param_set.q) {
                 ECP::Point C = P * k;
+                C = conv_uv_to_xy(C, param_set);
                 r = C.first % param_set.q;
                 if (r != BigInteger::ZERO) {
                     break;
@@ -96,9 +97,35 @@ class ECC {
         BigInteger z2 = (-(r * v)) % param_set.q;
 
         ECP::Point C = P * z1 + Q * z2;
+        C = conv_uv_to_xy(C, param_set);
 
         BigInteger R = C.first % param_set.q;
 
         return R == r;
+    }
+
+  private:
+    ECP::Point conv_uv_to_xy(const ECP::Point &P,
+                             const ECP::Params &param_set) {
+        BigInteger one = vector<uint8_t>{0x01};
+        BigInteger four = vector<uint8_t>{0x04};
+        BigInteger six = vector<uint8_t>{0x06};
+        BigInteger e = param_set.e;
+        BigInteger d = param_set.d;
+        BigInteger p = param_set.p;
+
+        BigInteger four_inv = four.get_inv_mod(p);
+        BigInteger six_inv = six.get_inv_mod(p);
+
+        BigInteger top_s = (e + (p - d)) % p;
+        BigInteger s = (top_s * four_inv) % p;
+        BigInteger top_t_ = (e + d) % p;
+        BigInteger t = (top_t_ * six_inv) % p;
+        BigInteger top = (s * ((one + P.second) % p)) % p;
+        BigInteger bottom = (one + (p - P.second) % p) % p;
+        BigInteger x = (((top * bottom.get_inv_mod(p)) % p) + t) % p;
+        BigInteger bottom2 = (bottom * P.first) % p;
+        BigInteger y = (top * bottom2.get_inv_mod(p)) % p;
+        return ECP::Point(x, y, param_set);
     }
 };
